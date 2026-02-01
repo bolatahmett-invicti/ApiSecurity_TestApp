@@ -1,6 +1,6 @@
 # 🏢 Enterprise Microservices Test Suite
 
-This folder contains a realistic enterprise microservices architecture for testing the Universal Polyglot API Scanner.
+This folder contains a realistic enterprise microservices architecture for testing the Universal Polyglot API Scanner...
 
 ## 📦 Services
 
