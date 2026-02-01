@@ -134,15 +134,50 @@ jobs:
         id: diff
         if: steps.previous.outputs.has_previous == 'true'
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/output:/output \
-            -e INVICTI_SYNC=false \
-            --entrypoint python \
-            ${{ env.SCANNER_IMAGE }} \
-            /app/invicti_sync.py \
-              --file /output/openapi.json \
-              --diff /output/previous.json \
-              --dry-run 2>&1 | tee diff_output.txt
+          # Simple Python-based diff comparison
+          python3 << 'EOFPYTHON' > diff_output.txt
+          import json
+          import sys
+          
+          def load_spec(file):
+              try:
+                  with open(file) as f:
+                      return json.load(f)
+              except:
+                  return {'paths': {}}
+          
+          current = load_spec('output/openapi.json')
+          previous = load_spec('output/previous.json')
+          
+          current_paths = set(current.get('paths', {}).keys())
+          previous_paths = set(previous.get('paths', {}).keys())
+          
+          added = current_paths - previous_paths
+          removed = previous_paths - current_paths
+          
+          print("=" * 60)
+          print("API DIFF SUMMARY")
+          print("=" * 60)
+          print(f"\n📊 Total Current Endpoints: {len(current_paths)}")
+          print(f"📊 Total Previous Endpoints: {len(previous_paths)}")
+          
+          if added:
+              print(f"\n✅ Added Endpoints ({len(added)}):")
+              for path in sorted(added):
+                  methods = list(current['paths'][path].keys())
+                  print(f"  + {path} [{', '.join(m.upper() for m in methods)}]")
+          
+          if removed:
+              print(f"\n❌ Removed Endpoints ({len(removed)}):")
+              for path in sorted(removed):
+                  methods = list(previous['paths'][path].keys())
+                  print(f"  - {path} [{', '.join(m.upper() for m in methods)}]")
+          
+          if not added and not removed:
+              print("\n✨ No API changes detected")
+          
+          print("\n" + "=" * 60)
+          EOFPYTHON
           
           # Extract diff summary for PR comment
           echo "diff_summary<<EOF" >> $GITHUB_OUTPUT
