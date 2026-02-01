@@ -122,17 +122,30 @@ jobs:
           name: openapi-spec
           path: output/
 
-      - name: Get previous spec from base branch
+      - name: Download previous spec from base branch
         id: previous
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: security.yml
+          branch: ${{ github.base_ref }}
+          name: openapi-spec
+          path: output/previous/
+          
+      - name: Check if previous spec exists
+        id: check_previous
         run: |
-          git checkout origin/${{ github.base_ref }} -- openapi.json 2>/dev/null && \
-            mv openapi.json output/previous.json && \
-            echo "has_previous=true" >> $GITHUB_OUTPUT || \
+          if [ -f "output/previous/openapi.json" ]; then
+            mv output/previous/openapi.json output/previous.json
+            echo "has_previous=true" >> $GITHUB_OUTPUT
+          else
             echo "has_previous=false" >> $GITHUB_OUTPUT
+            echo "No previous OpenAPI spec found for comparison"
+          fi
 
       - name: Compute API Diff
         id: diff
-        if: steps.previous.outputs.has_previous == 'true'
+        if: steps.check_previous.outputs.has_previous == 'true'
         run: |
           # Simple Python-based diff comparison
           python3 << 'EOFPYTHON' > diff_output.txt
@@ -185,7 +198,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
-        if: steps.previous.outputs.has_previous == 'true'
+        if: steps.check_previous.outputs.has_previous == 'true'
         uses: actions/github-script@v7
         with:
           script: |
