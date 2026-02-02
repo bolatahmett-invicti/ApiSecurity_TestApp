@@ -67,8 +67,6 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/code:ro \
             -v ${{ github.workspace }}/output:/output \
-            -e TARGET_DIR=/code \
-            -e INVICTI_SYNC=false \
             --user $(id -u):$(id -g) \
             ${{ env.SCANNER_IMAGE }}
           
