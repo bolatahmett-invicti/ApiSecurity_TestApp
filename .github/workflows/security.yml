@@ -68,10 +68,7 @@ jobs:
             -v ${{ github.workspace }}:/code:ro \
             -v ${{ github.workspace }}/output:/output \
             --user $(id -u):$(id -g) \
-            -e SCAN_DIR=/code \
-            -e OUTPUT_DIR=/output \
-            ${{ env.SCANNER_IMAGE }} \
-            --input /code --output /output
+            ${{ env.SCANNER_IMAGE }}
           
           # Extract metrics
           ENDPOINT_COUNT=$(python3 -c "import json; f=open('output/openapi.json'); d=json.load(f); print(len(d.get('paths', {})))")
