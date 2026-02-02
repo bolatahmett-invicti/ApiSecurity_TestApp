@@ -37,7 +37,7 @@ permissions:
   issues: write
 
 env:
-  SCANNER_IMAGE: bolatahmett/api-scanner:6bbf58f3534a638516ddc6550cd62a5eae154397
+  SCANNER_IMAGE: bolatahmett/api-scanner:latest
 
 jobs:
   # ===========================================================================
