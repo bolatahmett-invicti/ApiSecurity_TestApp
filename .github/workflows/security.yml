@@ -154,12 +154,18 @@ jobs:
               bedrock)
                 if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ] && [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
                   echo "🤖 AI Enrichment: ENABLED (AWS Bedrock)"
+                  # Use AWS_REGION from secrets if available, otherwise default to us-east-1
+                  AWS_REGION_VALUE="${{ secrets.AWS_REGION }}"
+                  if [ -z "$AWS_REGION_VALUE" ]; then
+                    AWS_REGION_VALUE="us-east-1"
+                  fi
+                  echo "📍 AWS Region: $AWS_REGION_VALUE"
                   DOCKER_CMD="$DOCKER_CMD \
                     -e SCANNER_AI_ENRICH=true \
                     -e LLM_PROVIDER=bedrock \
                     -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
                     -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-                    -e AWS_REGION=us-east-1 \
+                    -e AWS_REGION=$AWS_REGION_VALUE \
                     -e ENRICHMENT_MAX_WORKERS=3"
                   HAS_API_KEY=true
                 fi
