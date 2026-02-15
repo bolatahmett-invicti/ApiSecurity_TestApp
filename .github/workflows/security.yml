@@ -61,9 +61,9 @@ permissions:
 env:
   SCANNER_IMAGE: bolatahmett/api-scanner:latest
   # Set to 'true' to enable AI enrichment
-  AI_ENRICHMENT_ENABLED: true
+  AI_ENRICHMENT_ENABLED: ${{ vars.AI_ENRICHMENT_ENABLED }}
   # Default AI provider (anthropic, openai, gemini, bedrock)
-  DEFAULT_LLM_PROVIDER: anthropic
+  DEFAULT_LLM_PROVIDER: ${{ vars.DEFAULT_LLM_PROVIDER }}
 
 jobs:
   # ===========================================================================
