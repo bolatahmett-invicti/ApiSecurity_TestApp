@@ -75,7 +75,7 @@ Test the scanner locally with Docker:
 docker run --rm \
   -v $(pwd):/code \
   -v $(pwd)/output:/output \
-  bolatahmett/api-scanner:5.0
+  bolatahmett/api-scanner:latest
 
 # AI-enriched scan
 docker run --rm \
@@ -83,7 +83,7 @@ docker run --rm \
   -v $(pwd)/output:/output \
   -e SCANNER_AI_ENRICH=true \
   -e ANTHROPIC_API_KEY=sk-ant-your-key \
-  bolatahmett/api-scanner:5.0
+  bolatahmett/api-scanner:latest
 ```
 
 ## 📊 AI Enrichment Benefits
@@ -285,7 +285,7 @@ Edit `.github/workflows/security.yml`:
 
 ```yaml
 env:
-  SCANNER_IMAGE: bolatahmett/api-scanner:5.0
+  SCANNER_IMAGE: bolatahmett/api-scanner:latest
   # Set to 'true' to enable AI enrichment (requires ANTHROPIC_API_KEY secret)
   AI_ENRICHMENT_ENABLED: true  # Change to false to disable
 ```

@@ -43,7 +43,7 @@ permissions:
   issues: write
 
 env:
-  SCANNER_IMAGE: bolatahmett/api-scanner:5.0
+  SCANNER_IMAGE: bolatahmett/api-scanner:latest
   # Set to 'true' to enable AI enrichment (requires ANTHROPIC_API_KEY secret)
   AI_ENRICHMENT_ENABLED: true
 
