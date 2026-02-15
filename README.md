@@ -31,21 +31,48 @@ The GitHub Actions workflow (`.github/workflows/security.yml`) automatically:
 
 Go to **Settings > Secrets and variables > Actions** and add:
 
+#### Invicti DAST Credentials (Required)
+
 | Secret | Description | Required |
 |--------|-------------|----------|
 | `INVICTI_URL` | Invicti instance URL | Yes |
 | `INVICTI_USER` | Invicti API user ID | Yes |
 | `INVICTI_TOKEN` | Invicti API token | Yes |
 | `INVICTI_WEBSITE_ID` | Target website ID | Yes |
-| `ANTHROPIC_API_KEY` | Claude API key for AI enrichment | Optional* |
 
-*AI enrichment will be disabled if not provided, falling back to basic scan.
+#### AI Provider Credentials (Optional - At Least One for AI Enrichment)
 
-### Getting Anthropic API Key
+| Secret | Provider | Description | Get Key |
+|--------|----------|-------------|---------|
+| `ANTHROPIC_API_KEY` | Anthropic Claude (Default) | Claude API key | [console.anthropic.com](https://console.anthropic.com/) |
+| `OPENAI_API_KEY` | OpenAI GPT-4 | OpenAI API key | [platform.openai.com](https://platform.openai.com/api-keys) |
+| `GOOGLE_API_KEY` | Google Gemini | Gemini API key | [makersuite.google.com](https://makersuite.google.com/app/apikey) |
+| `AWS_ACCESS_KEY_ID` | AWS Bedrock | AWS access key | [AWS Console](https://console.aws.amazon.com/) |
+| `AWS_SECRET_ACCESS_KEY` | AWS Bedrock | AWS secret key | [AWS Console](https://console.aws.amazon.com/) |
 
-1. Sign up at [https://console.anthropic.com/](https://console.anthropic.com/)
-2. Create an API key
-3. Add it as `ANTHROPIC_API_KEY` secret in GitHub
+**Note:** AI enrichment will be disabled if no provider API key is configured, falling back to basic scan.
+
+### Choosing an AI Provider
+
+**Anthropic Claude (Default - Recommended)**
+- Best balance of quality, speed, and cost
+- Models: claude-sonnet-4-5-20250929 (default), claude-opus-4-6, claude-haiku-4-5-20251001
+- Cost: ~$3-5 per 100 endpoints (first scan), ~$0.60-1.00 (cached)
+
+**OpenAI GPT-4**
+- Wide availability and familiarity
+- Models: gpt-4-turbo (default), gpt-4o, gpt-4o-mini
+- Cost: Similar to Claude
+
+**Google Gemini**
+- Competitive pricing
+- Models: gemini-1.5-pro (default), gemini-1.5-flash
+- Cost: Lower than Claude/GPT-4
+
+**AWS Bedrock**
+- Enterprise deployments with AWS infrastructure
+- Models: Claude via Bedrock, Llama 3, Mistral
+- Cost: Pay-as-you-go pricing through AWS
 
 ## 🎯 Usage
 
@@ -65,6 +92,7 @@ Run manually with custom options:
 4. Choose options:
    - **Upload to Invicti DAST**: Enable/disable Invicti upload
    - **Enable AI enrichment**: Enable/disable AI-powered enrichment
+   - **AI Provider**: Select provider (anthropic, openai, gemini, bedrock)
 
 ### Local Testing
 
@@ -77,12 +105,42 @@ docker run --rm \
   -v $(pwd)/output:/output \
   bolatahmett/api-scanner:latest
 
-# AI-enriched scan
+# AI-enriched scan with Anthropic Claude (default)
 docker run --rm \
   -v $(pwd):/code \
   -v $(pwd)/output:/output \
   -e SCANNER_AI_ENRICH=true \
+  -e LLM_PROVIDER=anthropic \
   -e ANTHROPIC_API_KEY=sk-ant-your-key \
+  bolatahmett/api-scanner:latest
+
+# AI-enriched scan with OpenAI GPT-4
+docker run --rm \
+  -v $(pwd):/code \
+  -v $(pwd)/output:/output \
+  -e SCANNER_AI_ENRICH=true \
+  -e LLM_PROVIDER=openai \
+  -e OPENAI_API_KEY=sk-your-key \
+  bolatahmett/api-scanner:latest
+
+# AI-enriched scan with Google Gemini
+docker run --rm \
+  -v $(pwd):/code \
+  -v $(pwd)/output:/output \
+  -e SCANNER_AI_ENRICH=true \
+  -e LLM_PROVIDER=gemini \
+  -e GOOGLE_API_KEY=your-key \
+  bolatahmett/api-scanner:latest
+
+# AI-enriched scan with AWS Bedrock
+docker run --rm \
+  -v $(pwd):/code \
+  -v $(pwd)/output:/output \
+  -e SCANNER_AI_ENRICH=true \
+  -e LLM_PROVIDER=bedrock \
+  -e AWS_ACCESS_KEY_ID=your-access-key \
+  -e AWS_SECRET_ACCESS_KEY=your-secret-key \
+  -e AWS_REGION=us-east-1 \
   bolatahmett/api-scanner:latest
 ```
 
@@ -286,9 +344,22 @@ Edit `.github/workflows/security.yml`:
 ```yaml
 env:
   SCANNER_IMAGE: bolatahmett/api-scanner:latest
-  # Set to 'true' to enable AI enrichment (requires ANTHROPIC_API_KEY secret)
+  # Set to 'true' to enable AI enrichment
   AI_ENRICHMENT_ENABLED: true  # Change to false to disable
+  # Default AI provider (anthropic, openai, gemini, bedrock)
+  DEFAULT_LLM_PROVIDER: anthropic
 ```
+
+### Change Default AI Provider
+
+To use a different AI provider by default, update the workflow:
+
+```yaml
+env:
+  DEFAULT_LLM_PROVIDER: openai  # or gemini, bedrock
+```
+
+And ensure the corresponding secret is configured (e.g., `OPENAI_API_KEY`).
 
 ### Adjust Scanner Settings
 
@@ -301,12 +372,35 @@ Add environment variables to the Docker run command:
       -v ${{ github.workspace }}:/code:ro \
       -v ${{ github.workspace }}/output:/output \
       -e SCANNER_AI_ENRICH=true \
+      -e LLM_PROVIDER=anthropic \
       -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
+      -e LLM_MODEL=claude-sonnet-4-5-20250929 \
+      -e LLM_MAX_TOKENS=4096 \
       -e ENRICHMENT_MAX_WORKERS=3 \
-      -e ENRICHMENT_MODEL=claude-sonnet-4-5-20250929 \
       -e SCANNER_PARALLEL=true \
       -e SCANNER_WORKERS=8 \
       ${{ env.SCANNER_IMAGE }}
+```
+
+**Multi-Provider Examples:**
+
+```yaml
+# Using OpenAI GPT-4
+-e LLM_PROVIDER=openai \
+-e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+-e LLM_MODEL=gpt-4-turbo
+
+# Using Google Gemini
+-e LLM_PROVIDER=gemini \
+-e GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
+-e LLM_MODEL=gemini-1.5-pro
+
+# Using AWS Bedrock
+-e LLM_PROVIDER=bedrock \
+-e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+-e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+-e AWS_REGION=us-east-1 \
+-e LLM_MODEL=anthropic.claude-3-5-sonnet-20241022-v2:0
 ```
 
 ## 📚 Documentation

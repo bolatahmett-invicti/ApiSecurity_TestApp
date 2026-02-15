@@ -12,7 +12,13 @@
 #   - INVICTI_USER: API User ID
 #   - INVICTI_TOKEN: API Token
 #   - INVICTI_WEBSITE_ID: Target Website ID
-#   - ANTHROPIC_API_KEY: Claude API key for AI enrichment (optional)
+#
+# AI Provider Secrets (at least one required for AI enrichment):
+#   - ANTHROPIC_API_KEY: Anthropic Claude API key (default provider)
+#   - OPENAI_API_KEY: OpenAI GPT-4 API key (optional)
+#   - GOOGLE_API_KEY: Google Gemini API key (optional)
+#   - AWS_ACCESS_KEY_ID: AWS Bedrock access key (optional)
+#   - AWS_SECRET_ACCESS_KEY: AWS Bedrock secret key (optional)
 #
 # Usage: Place this file at .github/workflows/security.yml
 # =============================================================================
@@ -32,10 +38,20 @@ on:
         default: false
         type: boolean
       ai_enrich:
-        description: 'Enable AI-powered enrichment (requires ANTHROPIC_API_KEY secret)'
+        description: 'Enable AI-powered enrichment'
         required: false
         default: true
         type: boolean
+      llm_provider:
+        description: 'AI Provider (anthropic, openai, gemini, bedrock)'
+        required: false
+        default: 'anthropic'
+        type: choice
+        options:
+          - anthropic
+          - openai
+          - gemini
+          - bedrock
 
 permissions:
   contents: read
@@ -44,8 +60,10 @@ permissions:
 
 env:
   SCANNER_IMAGE: bolatahmett/api-scanner:latest
-  # Set to 'true' to enable AI enrichment (requires ANTHROPIC_API_KEY secret)
+  # Set to 'true' to enable AI enrichment
   AI_ENRICHMENT_ENABLED: true
+  # Default AI provider (anthropic, openai, gemini, bedrock)
+  DEFAULT_LLM_PROVIDER: anthropic
 
 jobs:
   # ===========================================================================
@@ -78,6 +96,12 @@ jobs:
             AI_ENRICH="${{ github.event.inputs.ai_enrich }}"
           fi
 
+          # Determine LLM provider
+          LLM_PROVIDER="${{ env.DEFAULT_LLM_PROVIDER }}"
+          if [ "${{ github.event.inputs.llm_provider }}" != "" ]; then
+            LLM_PROVIDER="${{ github.event.inputs.llm_provider }}"
+          fi
+
           # Build docker command
           DOCKER_CMD="docker run --rm \
             -v ${{ github.workspace }}:/code:ro \
@@ -85,12 +109,63 @@ jobs:
             --user $(id -u):$(id -g)"
 
           # Add AI enrichment environment variables if enabled
-          if [ "$AI_ENRICH" = "true" ] && [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
-            echo "🤖 AI Enrichment: ENABLED"
-            DOCKER_CMD="$DOCKER_CMD \
-              -e SCANNER_AI_ENRICH=true \
-              -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
-              -e ENRICHMENT_MAX_WORKERS=3"
+          if [ "$AI_ENRICH" = "true" ]; then
+            # Check if provider-specific API key is available
+            HAS_API_KEY=false
+
+            case "$LLM_PROVIDER" in
+              anthropic)
+                if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+                  echo "🤖 AI Enrichment: ENABLED (Anthropic Claude)"
+                  DOCKER_CMD="$DOCKER_CMD \
+                    -e SCANNER_AI_ENRICH=true \
+                    -e LLM_PROVIDER=anthropic \
+                    -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
+                    -e ENRICHMENT_MAX_WORKERS=3"
+                  HAS_API_KEY=true
+                fi
+                ;;
+              openai)
+                if [ -n "${{ secrets.OPENAI_API_KEY }}" ]; then
+                  echo "🤖 AI Enrichment: ENABLED (OpenAI GPT-4)"
+                  DOCKER_CMD="$DOCKER_CMD \
+                    -e SCANNER_AI_ENRICH=true \
+                    -e LLM_PROVIDER=openai \
+                    -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+                    -e ENRICHMENT_MAX_WORKERS=3"
+                  HAS_API_KEY=true
+                fi
+                ;;
+              gemini)
+                if [ -n "${{ secrets.GOOGLE_API_KEY }}" ]; then
+                  echo "🤖 AI Enrichment: ENABLED (Google Gemini)"
+                  DOCKER_CMD="$DOCKER_CMD \
+                    -e SCANNER_AI_ENRICH=true \
+                    -e LLM_PROVIDER=gemini \
+                    -e GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
+                    -e ENRICHMENT_MAX_WORKERS=3"
+                  HAS_API_KEY=true
+                fi
+                ;;
+              bedrock)
+                if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ] && [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+                  echo "🤖 AI Enrichment: ENABLED (AWS Bedrock)"
+                  DOCKER_CMD="$DOCKER_CMD \
+                    -e SCANNER_AI_ENRICH=true \
+                    -e LLM_PROVIDER=bedrock \
+                    -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+                    -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+                    -e AWS_REGION=us-east-1 \
+                    -e ENRICHMENT_MAX_WORKERS=3"
+                  HAS_API_KEY=true
+                fi
+                ;;
+            esac
+
+            if [ "$HAS_API_KEY" = "false" ]; then
+              echo "⚠️ AI Enrichment: DISABLED (no API key found for $LLM_PROVIDER)"
+              echo "📋 Falling back to basic scan"
+            fi
           else
             echo "📋 AI Enrichment: DISABLED (basic scan only)"
           fi
