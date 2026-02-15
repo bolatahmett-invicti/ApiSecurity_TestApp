@@ -64,9 +64,6 @@ env:
   AI_ENRICHMENT_ENABLED: ${{ vars.AI_ENRICHMENT_ENABLED }}
   # Default AI provider (anthropic, openai, gemini, bedrock)
   DEFAULT_LLM_PROVIDER: ${{ vars.DEFAULT_LLM_PROVIDER }}
-  # Security: Restrict scanner to repository directory only
-  # ALLOWED_SCAN_DIRS is set to /code (mounted from github.workspace)
-  # ENABLE_SYMLINK_SCAN is disabled by default for security
 
 jobs:
   # ===========================================================================
@@ -109,14 +106,17 @@ jobs:
           # Convert to lowercase
           LLM_PROVIDER=$(echo "$LLM_PROVIDER" | tr '[:upper:]' '[:lower:]')
 
-          # Build docker command with security settings
-          # Scanner will only scan auth-service directory
+          # Build docker command
+          # Scanner will scan auth-service directory mounted as /code
           DOCKER_CMD="docker run --rm \
             -v ${{ github.workspace }}/test-microservices/auth-service:/code:ro \
             -v ${{ github.workspace }}/output:/output \
-            --user $(id -u):$(id -g) \
-            -e ALLOWED_SCAN_DIRS=/code \
-            -e ENABLE_SYMLINK_SCAN=false"
+            --user $(id -u):$(id -g)"
+
+          # Optional: Add path security if needed (disabled by default)
+          # Uncomment to restrict scanning to specific directories
+          # DOCKER_CMD="$DOCKER_CMD -e ALLOWED_SCAN_DIRS=/code"
+          # DOCKER_CMD="$DOCKER_CMD -e ENABLE_SYMLINK_SCAN=false"
 
           # Add AI enrichment environment variables if enabled
           if [ "$AI_ENRICH" = "true" ]; then
