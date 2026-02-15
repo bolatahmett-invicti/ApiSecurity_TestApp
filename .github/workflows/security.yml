@@ -95,12 +95,16 @@ jobs:
           if [ "${{ github.event.inputs.ai_enrich }}" != "" ]; then
             AI_ENRICH="${{ github.event.inputs.ai_enrich }}"
           fi
+          # Convert to lowercase for case-insensitive comparison
+          AI_ENRICH=$(echo "$AI_ENRICH" | tr '[:upper:]' '[:lower:]')
 
           # Determine LLM provider
           LLM_PROVIDER="${{ env.DEFAULT_LLM_PROVIDER }}"
           if [ "${{ github.event.inputs.llm_provider }}" != "" ]; then
             LLM_PROVIDER="${{ github.event.inputs.llm_provider }}"
           fi
+          # Convert to lowercase
+          LLM_PROVIDER=$(echo "$LLM_PROVIDER" | tr '[:upper:]' '[:lower:]')
 
           # Build docker command
           DOCKER_CMD="docker run --rm \
