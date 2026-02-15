@@ -107,16 +107,18 @@ jobs:
           LLM_PROVIDER=$(echo "$LLM_PROVIDER" | tr '[:upper:]' '[:lower:]')
 
           # Build docker command
-          # Scanner will scan auth-service directory mounted as /code
+          # Path mapping:
+          #   Host: test-microservices/auth-service -> Container: /code (read-only)
+          #   Host: output/                         -> Container: /output
+          # Scanner will scan: /code (auth-service only)
           DOCKER_CMD="docker run --rm \
             -v ${{ github.workspace }}/test-microservices/auth-service:/code:ro \
             -v ${{ github.workspace }}/output:/output \
             --user $(id -u):$(id -g)"
 
-          # Optional: Add path security if needed (disabled by default)
-          # Uncomment to restrict scanning to specific directories
+          # Security: Restrict scanner to /code only (optional)
+          # Uncomment if you want to enforce path restrictions
           # DOCKER_CMD="$DOCKER_CMD -e ALLOWED_SCAN_DIRS=/code"
-          # DOCKER_CMD="$DOCKER_CMD -e ENABLE_SYMLINK_SCAN=false"
 
           # Add AI enrichment environment variables if enabled
           if [ "$AI_ENRICH" = "true" ]; then
@@ -186,9 +188,11 @@ jobs:
             echo "📋 AI Enrichment: DISABLED (basic scan only)"
           fi
 
-          DOCKER_CMD="$DOCKER_CMD ${{ env.SCANNER_IMAGE }}"
+          # Complete docker command with image, scan path, and output
+          DOCKER_CMD="$DOCKER_CMD ${{ env.SCANNER_IMAGE }} /code --export-openapi /output/openapi.json --quiet"
 
-          # Execute scan
+          # Execute scan (auth-service only)
+          echo "🔍 Scanning auth-service..."
           eval $DOCKER_CMD
           
           # Extract metrics
