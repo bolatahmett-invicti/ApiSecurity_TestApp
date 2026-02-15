@@ -112,10 +112,10 @@ jobs:
           # Build docker command with security settings
           # Scanner will only scan auth-service directory
           DOCKER_CMD="docker run --rm \
-            -v ${{ github.workspace }}:/code:ro \
+            -v ${{ github.workspace }}/test-microservices/auth-service:/code:ro \
             -v ${{ github.workspace }}/output:/output \
             --user $(id -u):$(id -g) \
-            -e ALLOWED_SCAN_DIRS=/code/test-microservices/auth-service \
+            -e ALLOWED_SCAN_DIRS=/code \
             -e ENABLE_SYMLINK_SCAN=false"
 
           # Add AI enrichment environment variables if enabled
