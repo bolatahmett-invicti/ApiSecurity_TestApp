@@ -403,8 +403,134 @@ Add environment variables to the Docker run command:
 -e LLM_MODEL=anthropic.claude-3-5-sonnet-20241022-v2:0
 ```
 
+## 🔒 Security Features
+
+### Path Validation & Scan Directory Restrictions
+
+The scanner includes comprehensive security validation to prevent unauthorized directory access.
+
+#### Automatic Protection
+
+The scanner automatically prevents scanning of:
+- **System directories**: `/etc`, `/boot`, `/root`, `/sys` (Linux/macOS) or `C:\Windows` (Windows)
+- **Path traversal attempts**: `../` sequences are detected and logged
+- **Symbolic links**: Disabled by default to prevent directory escaping
+
+#### Restrict Scan Directories (Production Recommended)
+
+Limit scanning to specific base directories using `ALLOWED_SCAN_DIRS`:
+
+```bash
+# Docker example - restrict to /code only
+docker run --rm \
+  -v $(pwd):/code \
+  -e ALLOWED_SCAN_DIRS=/code \
+  -e ANTHROPIC_API_KEY=sk-ant-your-key \
+  bolatahmett/api-scanner:latest
+
+# Multi-tenant example - separate directories per tenant
+docker run --rm \
+  -v $(pwd)/tenant1:/workspace/tenant1 \
+  -v $(pwd)/tenant2:/workspace/tenant2 \
+  -e ALLOWED_SCAN_DIRS=/workspace/tenant1 \
+  bolatahmett/api-scanner:latest
+```
+
+#### Security Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ALLOWED_SCAN_DIRS` | (none) | Comma-separated list of allowed base directories. If set, scanner will only scan paths under these directories. |
+| `ENABLE_SYMLINK_SCAN` | `false` | Enable scanning of symbolic links. Set to `true` only if you trust all symlinks. |
+
+#### GitHub Actions Security
+
+The workflow automatically restricts scanning to the repository directory:
+
+```yaml
+env:
+  ALLOWED_SCAN_DIRS: ${{ github.workspace }}
+  ENABLE_SYMLINK_SCAN: false
+```
+
+#### Security Examples
+
+**Secure Production Deployment:**
+```bash
+docker run --rm \
+  -v /app/code:/workspace:ro \
+  -e ALLOWED_SCAN_DIRS=/workspace \
+  -e ENABLE_SYMLINK_SCAN=false \
+  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  bolatahmett/api-scanner:latest
+```
+
+**Multi-Directory with Restrictions:**
+```bash
+# Allow scanning only /app and /workspace
+docker run --rm \
+  -v /app/project1:/app \
+  -v /workspace/project2:/workspace \
+  -e ALLOWED_SCAN_DIRS="/app,/workspace" \
+  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  bolatahmett/api-scanner:latest
+```
+
+**Development (Less Restricted):**
+```bash
+# Allow symlinks for local development (use with caution)
+docker run --rm \
+  -v $(pwd):/code \
+  -e ALLOWED_SCAN_DIRS=/code \
+  -e ENABLE_SYMLINK_SCAN=true \
+  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  bolatahmett/api-scanner:latest
+```
+
+#### Security Violations
+
+The scanner will exit with error if:
+- Attempting to scan system directories (e.g., `/etc`, `C:\Windows`)
+- Path is outside `ALLOWED_SCAN_DIRS` (if configured)
+- Symbolic links detected and `ENABLE_SYMLINK_SCAN=false`
+
+All violations are logged to the audit log for security monitoring.
+
+#### Best Practices
+
+1. **Always set `ALLOWED_SCAN_DIRS` in production**
+   ```bash
+   ALLOWED_SCAN_DIRS=/workspace,/app
+   ```
+
+2. **Keep `ENABLE_SYMLINK_SCAN=false` unless necessary**
+   - Only enable if you trust all symlinks
+   - Useful for node_modules/, vendor/ directories
+
+3. **Use read-only volume mounts**
+   ```bash
+   -v $(pwd):/code:ro  # Read-only mount
+   ```
+
+4. **Enable audit logging**
+   ```bash
+   -e SCANNER_AUDIT_LOG=/output/audit.log
+   ```
+
+5. **Review security logs regularly**
+   ```bash
+   docker run --rm -v $(pwd)/logs:/output \
+     -e SCANNER_AUDIT_LOG=/output/security.log \
+     ...
+   ```
+
+For detailed security documentation, see [SECURITY.md](https://github.com/yourorg/api-scanner/blob/main/docs/SECURITY.md).
+
+---
+
 ## 📚 Documentation
 
+- [Security Features](https://github.com/yourorg/api-scanner/blob/main/docs/SECURITY.md)
 - [AI Enrichment Guide](https://github.com/yourorg/api-scanner/blob/main/docs/AI_ENRICHMENT.md)
 - [Technical Architecture](https://github.com/yourorg/api-scanner/blob/main/docs/ARCHITECTURE.md)
 - [Scanner Main Repo](https://github.com/yourorg/api-scanner)
