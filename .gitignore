@@ -14,6 +14,8 @@ out/
 *.d.ts
 !jest.config.js
 !*.config.js
+# Allow test microservices JavaScript files
+!test-microservices/**/*.js
 
 # Environment variables
 .env
