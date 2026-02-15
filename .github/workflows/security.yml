@@ -87,6 +87,20 @@ jobs:
           mkdir -p ${{ github.workspace }}/output
           chmod 777 ${{ github.workspace }}/output
 
+      - name: Verify auth-service directory
+        run: |
+          echo "📁 Checking auth-service directory structure..."
+          ls -la ${{ github.workspace }}/test-microservices/auth-service/
+          echo ""
+          echo "📄 Checking for app.js..."
+          if [ -f "${{ github.workspace }}/test-microservices/auth-service/app.js" ]; then
+            echo "✅ app.js found"
+            wc -l ${{ github.workspace }}/test-microservices/auth-service/app.js
+          else
+            echo "❌ app.js NOT found!"
+            exit 1
+          fi
+
       - name: Run API Scanner with AI Enrichment
         id: scan
         run: |
@@ -191,8 +205,25 @@ jobs:
           # Complete docker command with image, scan path, and output
           DOCKER_CMD="$DOCKER_CMD ${{ env.SCANNER_IMAGE }} /code --export-openapi /output/openapi.json --quiet"
 
-          # Execute scan (auth-service only)
+          # Debug: Check what's inside the container's /code directory
+          echo "🔍 Debug: Checking container's /code directory..."
+          docker run --rm \
+            -v ${{ github.workspace }}/test-microservices/auth-service:/code:ro \
+            ${{ env.SCANNER_IMAGE }} \
+            ls -la /code
+
+          echo ""
+          echo "📄 Checking if app.js exists in container..."
+          docker run --rm \
+            -v ${{ github.workspace }}/test-microservices/auth-service:/code:ro \
+            ${{ env.SCANNER_IMAGE }} \
+            sh -c "if [ -f /code/app.js ]; then echo '✅ app.js found in container'; wc -l /code/app.js; else echo '❌ app.js NOT found in container!'; fi"
+
+          echo ""
           echo "🔍 Scanning auth-service..."
+          echo "📋 Full Docker command:"
+          echo "$DOCKER_CMD"
+          echo ""
           eval $DOCKER_CMD
           
           # Extract metrics
