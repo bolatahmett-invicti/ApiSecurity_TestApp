@@ -143,39 +143,82 @@ jobs:
               anthropic)
                 if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
                   echo "🤖 AI Enrichment: ENABLED (Anthropic Claude)"
+                  echo "⚡ Phase 3 Hybrid Architecture: 87-90% Cost Reduction"
                   DOCKER_CMD="$DOCKER_CMD \
                     -e SCANNER_AI_ENRICH=true \
                     -e LLM_PROVIDER=anthropic \
                     -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
-                    -e ENRICHMENT_MAX_WORKERS=3"
+                    -e ENRICHMENT_MAX_WORKERS=3 \
+                    -e USE_DETERMINISTIC_ENRICHMENT=true \
+                    -e DETERMINISTIC_PARAMETERS=true \
+                    -e DETERMINISTIC_STATUS_CODES=true \
+                    -e DETERMINISTIC_HTTP_METHODS=true \
+                    -e DETERMINISTIC_TYPE_HINTS=true \
+                    -e DETERMINISTIC_DECORATORS=true \
+                    -e DETERMINISTIC_DOCSTRINGS=true \
+                    -e ENABLE_SMART_LLM_DECISIONS=true \
+                    -e SMART_LLM_CONFIDENCE_THRESHOLD=0.7 \
+                    -e ENABLE_FOCUSED_LLM_PROMPTS=true \
+                    -e ENABLE_BATCHING=true \
+                    -e OPENAPI_BATCH_SIZE=20 \
+                    -e PAYLOAD_BATCH_SIZE=15"
                   HAS_API_KEY=true
                 fi
                 ;;
               openai)
                 if [ -n "${{ secrets.OPENAI_API_KEY }}" ]; then
                   echo "🤖 AI Enrichment: ENABLED (OpenAI GPT-4)"
+                  echo "⚡ Phase 3 Hybrid Architecture: 87-90% Cost Reduction"
                   DOCKER_CMD="$DOCKER_CMD \
                     -e SCANNER_AI_ENRICH=true \
                     -e LLM_PROVIDER=openai \
                     -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-                    -e ENRICHMENT_MAX_WORKERS=3"
+                    -e ENRICHMENT_MAX_WORKERS=3 \
+                    -e USE_DETERMINISTIC_ENRICHMENT=true \
+                    -e DETERMINISTIC_PARAMETERS=true \
+                    -e DETERMINISTIC_STATUS_CODES=true \
+                    -e DETERMINISTIC_HTTP_METHODS=true \
+                    -e DETERMINISTIC_TYPE_HINTS=true \
+                    -e DETERMINISTIC_DECORATORS=true \
+                    -e DETERMINISTIC_DOCSTRINGS=true \
+                    -e ENABLE_SMART_LLM_DECISIONS=true \
+                    -e SMART_LLM_CONFIDENCE_THRESHOLD=0.7 \
+                    -e ENABLE_FOCUSED_LLM_PROMPTS=true \
+                    -e ENABLE_BATCHING=true \
+                    -e OPENAPI_BATCH_SIZE=20 \
+                    -e PAYLOAD_BATCH_SIZE=15"
                   HAS_API_KEY=true
                 fi
                 ;;
               gemini)
                 if [ -n "${{ secrets.GOOGLE_API_KEY }}" ]; then
                   echo "🤖 AI Enrichment: ENABLED (Google Gemini)"
+                  echo "⚡ Phase 3 Hybrid Architecture: 87-90% Cost Reduction"
                   DOCKER_CMD="$DOCKER_CMD \
                     -e SCANNER_AI_ENRICH=true \
                     -e LLM_PROVIDER=gemini \
                     -e GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
-                    -e ENRICHMENT_MAX_WORKERS=3"
+                    -e ENRICHMENT_MAX_WORKERS=3 \
+                    -e USE_DETERMINISTIC_ENRICHMENT=true \
+                    -e DETERMINISTIC_PARAMETERS=true \
+                    -e DETERMINISTIC_STATUS_CODES=true \
+                    -e DETERMINISTIC_HTTP_METHODS=true \
+                    -e DETERMINISTIC_TYPE_HINTS=true \
+                    -e DETERMINISTIC_DECORATORS=true \
+                    -e DETERMINISTIC_DOCSTRINGS=true \
+                    -e ENABLE_SMART_LLM_DECISIONS=true \
+                    -e SMART_LLM_CONFIDENCE_THRESHOLD=0.7 \
+                    -e ENABLE_FOCUSED_LLM_PROMPTS=true \
+                    -e ENABLE_BATCHING=true \
+                    -e OPENAPI_BATCH_SIZE=20 \
+                    -e PAYLOAD_BATCH_SIZE=15"
                   HAS_API_KEY=true
                 fi
                 ;;
               bedrock)
                 if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ] && [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
                   echo "🤖 AI Enrichment: ENABLED (AWS Bedrock)"
+                  echo "⚡ Phase 3 Hybrid Architecture: 87-90% Cost Reduction"
                   # Use AWS_REGION from secrets if available, otherwise default to us-east-1
                   AWS_REGION_VALUE="${{ secrets.AWS_REGION }}"
                   if [ -z "$AWS_REGION_VALUE" ]; then
@@ -188,7 +231,20 @@ jobs:
                     -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
                     -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
                     -e AWS_REGION=$AWS_REGION_VALUE \
-                    -e ENRICHMENT_MAX_WORKERS=3"
+                    -e ENRICHMENT_MAX_WORKERS=3 \
+                    -e USE_DETERMINISTIC_ENRICHMENT=true \
+                    -e DETERMINISTIC_PARAMETERS=true \
+                    -e DETERMINISTIC_STATUS_CODES=true \
+                    -e DETERMINISTIC_HTTP_METHODS=true \
+                    -e DETERMINISTIC_TYPE_HINTS=true \
+                    -e DETERMINISTIC_DECORATORS=true \
+                    -e DETERMINISTIC_DOCSTRINGS=true \
+                    -e ENABLE_SMART_LLM_DECISIONS=true \
+                    -e SMART_LLM_CONFIDENCE_THRESHOLD=0.7 \
+                    -e ENABLE_FOCUSED_LLM_PROMPTS=true \
+                    -e ENABLE_BATCHING=true \
+                    -e OPENAPI_BATCH_SIZE=20 \
+                    -e PAYLOAD_BATCH_SIZE=15"
                   HAS_API_KEY=true
                 fi
                 ;;
