@@ -225,9 +225,16 @@ jobs:
                     AWS_REGION_VALUE="us-east-1"
                   fi
                   echo "📍 AWS Region: $AWS_REGION_VALUE"
+                  # Bedrock model selection (default: Claude 3.5 Sonnet v2)
+                  BEDROCK_MODEL="${{ vars.BEDROCK_MODEL }}"
+                  if [ -z "$BEDROCK_MODEL" ]; then
+                    BEDROCK_MODEL="anthropic.claude-3-5-sonnet-20241022-v2:0"
+                  fi
+                  echo "🤖 Model: $BEDROCK_MODEL"
                   DOCKER_CMD="$DOCKER_CMD \
                     -e SCANNER_AI_ENRICH=true \
                     -e LLM_PROVIDER=bedrock \
+                    -e LLM_MODEL=$BEDROCK_MODEL \
                     -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
                     -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
                     -e AWS_REGION=$AWS_REGION_VALUE \
