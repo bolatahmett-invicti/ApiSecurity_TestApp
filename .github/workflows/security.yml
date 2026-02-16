@@ -228,7 +228,7 @@ jobs:
                   # Bedrock model selection (default: Claude 3.5 Sonnet v2)
                   BEDROCK_MODEL="${{ vars.BEDROCK_MODEL }}"
                   if [ -z "$BEDROCK_MODEL" ]; then
-                    BEDROCK_MODEL="anthropic.claude-3-5-sonnet-20241022-v2:0"
+                    BEDROCK_MODEL="anthropic.claude-3-5-haiku-20241022-v1:0"
                   fi
                   echo "🤖 Model: $BEDROCK_MODEL"
                   DOCKER_CMD="$DOCKER_CMD \
