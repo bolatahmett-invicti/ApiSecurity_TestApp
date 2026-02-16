@@ -167,13 +167,14 @@ jobs:
                 ;;
               openai)
                 if [ -n "${{ secrets.OPENAI_API_KEY }}" ]; then
-                  echo "🤖 AI Enrichment: ENABLED (OpenAI GPT-4)"
-                  echo "⚡ Phase 3 Hybrid Architecture: 87-90% Cost Reduction"
+                  echo "🤖 AI Enrichment: ENABLED (OpenAI GPT-4o mini)"
+                  echo "⚡ Cost-optimized model: 85% cheaper than GPT-4"
                   DOCKER_CMD="$DOCKER_CMD \
                     -e SCANNER_AI_ENRICH=true \
                     -e LLM_PROVIDER=openai \
                     -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-                    -e ENRICHMENT_MAX_WORKERS=3 \
+                    -e OPENAI_MODEL=gpt-4o-mini \
+                    -e ENRICHMENT_MAX_WORKERS=5 \
                     -e USE_DETERMINISTIC_ENRICHMENT=true \
                     -e DETERMINISTIC_PARAMETERS=true \
                     -e DETERMINISTIC_STATUS_CODES=true \
@@ -185,8 +186,7 @@ jobs:
                     -e SMART_LLM_CONFIDENCE_THRESHOLD=0.7 \
                     -e ENABLE_FOCUSED_LLM_PROMPTS=true \
                     -e ENABLE_BATCHING=true \
-                    -e OPENAPI_BATCH_SIZE=20 \
-                    -e PAYLOAD_BATCH_SIZE=15"
+                    -e PAYLOAD_BATCH_SIZE=20"
                   HAS_API_KEY=true
                 fi
                 ;;
