@@ -126,7 +126,7 @@ jobs:
           #   Host: output/                         -> Container: /output
           # Scanner will scan: /code (auth-service only)
           DOCKER_CMD="docker run --rm \
-            -v ${{ github.workspace }}/test-microservices/auth-service:/code:ro \
+            -v ${{ github.workspace }}/test-microservices:/code:ro \
             -v ${{ github.workspace }}/output:/output \
             --user $(id -u):$(id -g)"
 
