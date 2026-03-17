@@ -1,0 +1,509 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-notification-code
+  namespace: {{ .Release.Namespace }}
+data:
+  main.py: |
+    import threading
+    import uvicorn
+    from fastapi import FastAPI
+    from database import engine, Base
+    from routes import router
+    from consumer import start_consumer
+
+    app = FastAPI(title="Notification Service", debug=True)
+
+    app.include_router(router)
+
+
+    @app.get("/health")
+    def health():
+        return {"status": "healthy", "service": "notification-service"}
+
+
+    @app.on_event("startup")
+    def on_startup():
+        # Create all database tables
+        Base.metadata.create_all(bind=engine)
+
+        # Start RabbitMQ consumer in a background thread
+        consumer_thread = threading.Thread(target=start_consumer, daemon=True)
+        consumer_thread.start()
+        print("[startup] RabbitMQ consumer thread started")
+
+
+    if __name__ == "__main__":
+        uvicorn.run(app, host="0.0.0.0", port=8006)
+
+  database.py: |
+    import os
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker, declarative_base
+
+    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/notifications_db")
+
+    engine = create_engine(DATABASE_URL)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base = declarative_base()
+
+
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+  models.py: |
+    from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+    from sqlalchemy.sql import func
+    from database import Base
+
+
+    class Notification(Base):
+        __tablename__ = "notifications"
+
+        id = Column(Integer, primary_key=True, index=True)
+        user_id = Column(Integer, nullable=False, index=True)
+        org_id = Column(Integer, nullable=True)
+        type = Column(String(100), nullable=False)
+        title = Column(String(500), nullable=False)
+        body = Column(Text, nullable=False)
+        channel = Column(String(50), nullable=False, default="in_app")  # email | webhook | in_app
+        status = Column(String(50), nullable=False, default="pending")  # pending | sent | failed
+        metadata_json = Column(Text, nullable=True)  # Stores arbitrary JSON
+        webhook_response = Column(Text, nullable=True)
+        created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+    class NotificationPreference(Base):
+        __tablename__ = "notification_preferences"
+
+        id = Column(Integer, primary_key=True, index=True)
+        user_id = Column(Integer, nullable=False, index=True)
+        channel = Column(String(50), nullable=False)
+        enabled = Column(Boolean, default=True)
+        webhook_url = Column(String(1000), nullable=True)
+        created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+  routes.py: |
+    import json
+    import httpx
+    from fastapi import APIRouter, Depends, Header, HTTPException
+    from sqlalchemy.orm import Session
+    from sqlalchemy import text
+    from typing import List, Optional
+
+    from database import get_db
+    from models import Notification, NotificationPreference
+    from schemas import (
+        NotificationResponse,
+        SendNotificationRequest,
+        BroadcastRequest,
+        PreferenceUpdate,
+        PreferenceResponse,
+        InternalEventRequest,
+    )
+
+    router = APIRouter()
+
+
+    def get_current_user_id(authorization: Optional[str] = Header(None)) -> int:
+        """Extract user_id from JWT token (simplified for demo)."""
+        if not authorization:
+            raise HTTPException(status_code=401, detail="Missing authorization header")
+        import jwt
+        try:
+            token = authorization.replace("Bearer ", "")
+            payload = jwt.decode(token, options={"verify_signature": False})
+            return payload.get("user_id", payload.get("sub"))
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+
+    # ---------------------------------------------------------------------------
+    # GET /notifications — list user's notifications (works correctly)
+    # ---------------------------------------------------------------------------
+    @router.get("/notifications", response_model=List[NotificationResponse])
+    def list_notifications(
+        authorization: Optional[str] = Header(None),
+        db: Session = Depends(get_db),
+    ):
+        user_id = get_current_user_id(authorization)
+        notifications = (
+            db.query(Notification)
+            .filter(Notification.user_id == user_id)
+            .order_by(Notification.created_at.desc())
+            .all()
+        )
+        return notifications
+
+
+    # ---------------------------------------------------------------------------
+    # POST /notifications/send — send notification
+    #
+    # VULN: Resource Amplification — accepts target="all_users" which fans out
+    #       to ALL users in the system. A single request can generate thousands
+    #       of notifications with no rate limiting or authorization check on the
+    #       target type.
+    # VULN: SSRF-like — when channel="webhook", the service makes an HTTP
+    #       callback to the user-supplied webhook_url without any URL validation
+    #       or allowlist, enabling Server-Side Request Forgery.
+    # ---------------------------------------------------------------------------
+    @router.post("/notifications/send")
+    def send_notification(
+        request: SendNotificationRequest,
+        authorization: Optional[str] = Header(None),
+        db: Session = Depends(get_db),
+    ):
+        user_id = get_current_user_id(authorization)
+
+        target_user_ids = []
+
+        if request.target == "user":
+            # Send to a specific user
+            target_user_ids = [request.user_id or user_id]
+
+        elif request.target == "org":
+            # Send to all users in an org — simplified: fake a list
+            if not request.org_id:
+                raise HTTPException(status_code=400, detail="org_id required for org target")
+            # VULN: No check that the sender belongs to the org
+            rows = db.execute(
+                text("SELECT DISTINCT user_id FROM notifications WHERE org_id = :org_id"),
+                {"org_id": request.org_id},
+            ).fetchall()
+            target_user_ids = [row[0] for row in rows] if rows else [request.org_id]
+
+        elif request.target == "all_users":
+            # VULN: Resource Amplification — fans out to ALL known users
+            # No authorization check on whether the caller can broadcast
+            rows = db.execute(
+                text("SELECT DISTINCT user_id FROM notifications")
+            ).fetchall()
+            target_user_ids = [row[0] for row in rows]
+            if not target_user_ids:
+                target_user_ids = list(range(1, 101))  # Fallback: generate for 100 users
+
+        created = []
+        for tid in target_user_ids:
+            notif = Notification(
+                user_id=tid,
+                org_id=request.org_id,
+                type="direct",
+                title=request.title,
+                body=request.body,
+                channel=request.channel,
+                status="pending",
+            )
+            db.add(notif)
+            db.flush()
+
+            # VULN: SSRF — if channel is webhook, call the user-controlled URL
+            if request.channel == "webhook":
+                pref = (
+                    db.query(NotificationPreference)
+                    .filter(
+                        NotificationPreference.user_id == tid,
+                        NotificationPreference.channel == "webhook",
+                    )
+                    .first()
+                )
+                if pref and pref.webhook_url:
+                    try:
+                        # VULN: No URL validation — can hit internal services,
+                        # cloud metadata endpoints, etc.
+                        resp = httpx.post(
+                            pref.webhook_url,
+                            json={"title": request.title, "body": request.body},
+                            timeout=5.0,
+                        )
+                        notif.webhook_response = resp.text[:2000]
+                        notif.status = "sent"
+                    except Exception as e:
+                        notif.webhook_response = str(e)
+                        notif.status = "failed"
+            else:
+                notif.status = "sent"
+
+            created.append(notif.id)
+
+        db.commit()
+        return {"sent": len(created), "notification_ids": created}
+
+
+    # ---------------------------------------------------------------------------
+    # POST /notifications/broadcast — broadcast to all users
+    #
+    # VULN: Broken Function-Level Authorization — checks the X-Admin-Role
+    #       header instead of the JWT role claim. Any user can set this header
+    #       to "true" and bypass the authorization check entirely.
+    # ---------------------------------------------------------------------------
+    @router.post("/notifications/broadcast")
+    def broadcast_notification(
+        request: BroadcastRequest,
+        authorization: Optional[str] = Header(None),
+        x_admin_role: Optional[str] = Header(None),
+        db: Session = Depends(get_db),
+    ):
+        # VULN: Checks a client-controlled header instead of JWT role
+        if x_admin_role != "true":
+            raise HTTPException(status_code=403, detail="Admin role required")
+
+        # Still decode token to get a user_id, but role is NOT checked from JWT
+        sender_id = get_current_user_id(authorization)
+
+        rows = db.execute(text("SELECT DISTINCT user_id FROM notifications")).fetchall()
+        target_user_ids = [row[0] for row in rows] if rows else list(range(1, 51))
+
+        created = []
+        for tid in target_user_ids:
+            notif = Notification(
+                user_id=tid,
+                org_id=None,
+                type="broadcast",
+                title=request.title,
+                body=request.body,
+                channel=request.channel,
+                status="sent",
+            )
+            db.add(notif)
+            db.flush()
+            created.append(notif.id)
+
+        db.commit()
+        return {"broadcast_to": len(created), "notification_ids": created}
+
+
+    # ---------------------------------------------------------------------------
+    # PUT /notifications/preferences — update notification preferences
+    # ---------------------------------------------------------------------------
+    @router.put("/notifications/preferences", response_model=PreferenceResponse)
+    def update_preferences(
+        request: PreferenceUpdate,
+        authorization: Optional[str] = Header(None),
+        db: Session = Depends(get_db),
+    ):
+        user_id = get_current_user_id(authorization)
+
+        pref = (
+            db.query(NotificationPreference)
+            .filter(
+                NotificationPreference.user_id == user_id,
+                NotificationPreference.channel == request.channel,
+            )
+            .first()
+        )
+
+        if pref:
+            pref.enabled = request.enabled
+            pref.webhook_url = request.webhook_url
+        else:
+            pref = NotificationPreference(
+                user_id=user_id,
+                channel=request.channel,
+                enabled=request.enabled,
+                webhook_url=request.webhook_url,
+            )
+            db.add(pref)
+
+        db.commit()
+        db.refresh(pref)
+        return pref
+
+
+    # ---------------------------------------------------------------------------
+    # POST /internal/events — receive internal service events
+    #
+    # VULN: Event Injection — no authentication whatsoever. This endpoint does
+    #       NOT require a JWT token or any form of auth. Anyone who can reach
+    #       this endpoint can inject arbitrary events.
+    # VULN: Cross-Service Trust — the source_service field is trusted blindly.
+    #       An attacker can impersonate any internal service (e.g., "payment-service",
+    #       "identity-service") and inject fake events that generate notifications.
+    # ---------------------------------------------------------------------------
+    @router.post("/internal/events")
+    def receive_internal_event(
+        request: InternalEventRequest,
+        db: Session = Depends(get_db),
+    ):
+        # VULN: No authentication — no JWT, no API key, no mTLS check
+        # VULN: Trusts source_service field from the request body blindly
+
+        user_id = request.data.get("user_id", 0)
+        org_id = request.data.get("org_id")
+
+        notif = Notification(
+            user_id=user_id,
+            org_id=org_id,
+            type=request.event_type,
+            title=f"Event from {request.source_service}: {request.event_type}",
+            body=json.dumps(request.data),
+            channel="in_app",
+            status="sent",
+            metadata_json=json.dumps({
+                "source_service": request.source_service,
+                "event_type": request.event_type,
+                "raw_data": request.data,
+            }),
+        )
+        db.add(notif)
+        db.commit()
+
+        return {"status": "processed", "notification_id": notif.id}
+
+  consumer.py: |
+    import json
+    import os
+    import pika
+    from sqlalchemy.orm import Session
+    from database import SessionLocal
+    from models import Notification
+
+
+    RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
+
+    EXCHANGE_NAME = "platform_events"
+    QUEUE_NAME = "notification_queue"
+    BINDING_KEYS = [
+        "events.notification.send",
+        "events.payment.completed",
+    ]
+
+
+    def handle_message(ch, method, properties, body):
+        """
+        Process incoming RabbitMQ messages and create notifications.
+
+        VULN: No source validation — any producer that can publish to the exchange
+              can trigger notification creation. There is no verification of the
+              message origin, signing, or authenticity. A compromised or rogue
+              service can inject arbitrary notifications.
+        """
+        try:
+            data = json.loads(body)
+            routing_key = method.routing_key
+
+            db: Session = SessionLocal()
+            try:
+                if routing_key == "events.notification.send":
+                    # VULN: Trusts all fields from the message without validation
+                    notif = Notification(
+                        user_id=data.get("user_id", 0),
+                        org_id=data.get("org_id"),
+                        type=data.get("type", "event"),
+                        title=data.get("title", "Notification"),
+                        body=data.get("body", ""),
+                        channel=data.get("channel", "in_app"),
+                        status="sent",
+                        metadata_json=json.dumps(data),
+                    )
+                    db.add(notif)
+
+                elif routing_key == "events.payment.completed":
+                    # VULN: No validation that this event actually came from payment-service
+                    notif = Notification(
+                        user_id=data.get("user_id", 0),
+                        org_id=data.get("org_id"),
+                        type="payment_completed",
+                        title="Payment Confirmed",
+                        body=f"Payment of ${data.get('amount', '0.00')} has been processed.",
+                        channel="in_app",
+                        status="sent",
+                        metadata_json=json.dumps(data),
+                    )
+                    db.add(notif)
+
+                db.commit()
+            finally:
+                db.close()
+
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        except Exception as e:
+            print(f"[consumer] Error processing message: {e}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
+
+    def start_consumer():
+        """Start the RabbitMQ consumer. Intended to run in a background thread."""
+        try:
+            connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
+            channel = connection.channel()
+
+            channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type="topic", durable=True)
+            channel.queue_declare(queue=QUEUE_NAME, durable=True)
+
+            for key in BINDING_KEYS:
+                channel.queue_bind(exchange=EXCHANGE_NAME, queue=QUEUE_NAME, routing_key=key)
+
+            channel.basic_qos(prefetch_count=10)
+            channel.basic_consume(queue=QUEUE_NAME, on_message_callback=handle_message)
+
+            print(f"[consumer] Listening on queue '{QUEUE_NAME}' for keys: {BINDING_KEYS}")
+            channel.start_consuming()
+
+        except Exception as e:
+            print(f"[consumer] Failed to start RabbitMQ consumer: {e}")
+
+  schemas.py: |
+    from pydantic import BaseModel
+    from typing import Optional
+    from datetime import datetime
+
+
+    class NotificationResponse(BaseModel):
+        id: int
+        user_id: int
+        org_id: Optional[int] = None
+        type: str
+        title: str
+        body: str
+        channel: str
+        status: str
+        metadata_json: Optional[str] = None
+        webhook_response: Optional[str] = None
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class SendNotificationRequest(BaseModel):
+        user_id: Optional[int] = None
+        org_id: Optional[int] = None
+        target: str  # "user" | "org" | "all_users"
+        title: str
+        body: str
+        channel: str = "in_app"
+
+
+    class BroadcastRequest(BaseModel):
+        title: str
+        body: str
+        channel: str = "in_app"
+
+
+    class PreferenceUpdate(BaseModel):
+        channel: str
+        enabled: bool
+        webhook_url: Optional[str] = None
+
+
+    class PreferenceResponse(BaseModel):
+        id: int
+        user_id: int
+        channel: str
+        enabled: bool
+        webhook_url: Optional[str] = None
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class InternalEventRequest(BaseModel):
+        event_type: str
+        source_service: str
+        data: dict

@@ -1,0 +1,110 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-gateway
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.gateway.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-gateway
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-gateway
+    spec:
+      initContainers:
+      - name: install-deps
+        image: python:3.12-slim
+        command: ["sh", "-c", "pip install --target=/deps --quiet fastapi==0.115.0 uvicorn==0.30.6 httpx==0.27.0 'pydantic==2.9.2' PyJWT==2.9.0"]
+        volumeMounts:
+        - name: deps
+          mountPath: /deps
+      containers:
+      - name: gateway
+        image: python:3.12-slim
+        command: ["python", "/app/main.py"]
+        env:
+        - name: PYTHONPATH
+          value: "/deps:/app"
+        - name: SERVICE_NAME
+          value: gateway-service
+        - name: SERVICE_PORT
+          value: "8000"
+        - name: JWT_SECRET
+          value: {{ .Values.jwt.secret | quote }}
+        - name: JWT_ALGORITHM
+          value: {{ .Values.jwt.algorithm | quote }}
+        - name: JWT_EXPIRY_MINUTES
+          value: {{ .Values.jwt.expiryMinutes | quote }}
+        - name: RABBITMQ_HOST
+          value: {{ .Release.Name }}-rabbitmq
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USER
+          value: {{ .Values.rabbitmq.user | quote }}
+        - name: RABBITMQ_PASSWORD
+          value: {{ .Values.rabbitmq.password | quote }}
+        - name: AUTH_SERVICE_URL
+          value: "http://{{ .Release.Name }}-auth:{{ .Values.authService.port }}"
+        - name: USER_SERVICE_URL
+          value: "http://{{ .Release.Name }}-user:{{ .Values.userService.port }}"
+        - name: PROJECT_SERVICE_URL
+          value: "http://{{ .Release.Name }}-project:{{ .Values.projectService.port }}"
+        - name: BILLING_SERVICE_URL
+          value: "http://{{ .Release.Name }}-billing:{{ .Values.billingService.port }}"
+        - name: PAYMENT_SERVICE_URL
+          value: "http://{{ .Release.Name }}-payment:{{ .Values.paymentService.port }}"
+        - name: NOTIFICATION_SERVICE_URL
+          value: "http://{{ .Release.Name }}-notification:{{ .Values.notificationService.port }}"
+        - name: REPORTING_SERVICE_URL
+          value: "http://{{ .Release.Name }}-reporting:{{ .Values.reportingService.port }}"
+        ports:
+        - containerPort: 8443
+          name: https
+        - containerPort: 8000
+          name: http
+        volumeMounts:
+        - name: deps
+          mountPath: /deps
+          readOnly: true
+        - name: service-code
+          mountPath: /app
+          readOnly: true
+        - name: tls-certs
+          mountPath: /etc/tls
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: deps
+        emptyDir: {}
+      - name: service-code
+        configMap:
+          name: {{ .Release.Name }}-gateway-code
+      - name: tls-certs
+        secret:
+          secretName: dvp-gateway-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-gateway
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: LoadBalancer
+  selector:
+    app: {{ .Release.Name }}-gateway
+  ports:
+  - port: 443
+    targetPort: 8443
+    name: https
+  - port: 8000
+    targetPort: 8000
+    name: http

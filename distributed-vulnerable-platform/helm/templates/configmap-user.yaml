@@ -1,0 +1,475 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-user-code
+  namespace: {{ .Release.Namespace }}
+data:
+  main.py: |
+    """User Service — user profiles, organizations, memberships, API tokens."""
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    import uvicorn
+    from fastapi import FastAPI
+
+    from database import create_tables
+    from routes import router
+
+    app = FastAPI(
+        title="User Service",
+        description="User management, organizations, and API tokens. Part of the Distributed Vulnerable Platform.",
+        version="1.0.0",
+        debug=True,  # VULN: Debug mode exposes stack traces
+    )
+
+    app.include_router(router)
+
+
+    @app.on_event("startup")
+    def on_startup():
+        create_tables()
+
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok", "service": "user-service"}
+
+
+    if __name__ == "__main__":
+        uvicorn.run(app, host="0.0.0.0", port=8002)
+
+  database.py: |
+    """User service database setup."""
+
+    import os
+    import sys
+
+    sys.path.insert(0, "/app")
+
+    from shared.database import Base, get_engine, get_session_factory
+
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./user.db")
+
+    engine = get_engine(DATABASE_URL)
+    SessionLocal = get_session_factory(engine)
+
+
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+
+    def create_tables():
+        from models import User, Organization, OrgMembership, APIToken, Invite  # noqa: F401
+        Base.metadata.create_all(bind=engine)
+
+  models.py: |
+    """User service SQLAlchemy models."""
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    from datetime import datetime, timezone
+
+    from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+    from shared.database import Base
+
+
+    class User(Base):
+        __tablename__ = "users"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        auth_user_id = Column(Integer, nullable=False, unique=True, index=True)
+        email = Column(String(255), unique=True, nullable=False, index=True)
+        full_name = Column(String(255), default="")
+        phone = Column(String(50), default="")
+        ssn_last4 = Column(String(4), default="")  # VULN: Sensitive PII stored
+        internal_notes = Column(Text, default="")  # VULN: Internal data
+        password_hash = Column(String(255), default="")  # VULN: Duplicated from auth, exposed in responses
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class Organization(Base):
+        __tablename__ = "organizations"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        name = Column(String(255), nullable=False)
+        slug = Column(String(255), unique=True, nullable=False)
+        owner_id = Column(Integer, nullable=False)
+        plan_type = Column(String(50), default="free")  # free, starter, pro, enterprise
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class OrgMembership(Base):
+        __tablename__ = "org_memberships"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+        org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+        role = Column(String(50), default="member")  # owner, admin, member, viewer
+        invited_by = Column(Integer, nullable=True)
+        joined_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class APIToken(Base):
+        __tablename__ = "api_tokens"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+        org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+        token_hash = Column(String(255), nullable=False)
+        token_plain = Column(String(255), nullable=False)  # VULN: Plaintext token stored
+        name = Column(String(255), default="default")
+        scopes = Column(String(500), default="read")
+        last_used = Column(DateTime, nullable=True)
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class Invite(Base):
+        __tablename__ = "invites"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+        email = Column(String(255), nullable=False)
+        role = Column(String(50), default="member")
+        token = Column(String(255), nullable=False, unique=True)
+        accepted = Column(Boolean, default=False)
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+  routes.py: |
+    """User service routes.
+
+    INTENTIONAL VULNERABILITIES:
+    - BOLA: No org_id check on user/org access
+    - Broken function-level auth: DELETE /users/{id} has no admin check
+    - Bulk data harvesting: GET /users has no org filter, accepts page_size=10000
+    - Sensitive data exposure: Returns PII, password_hash, plaintext API tokens
+    - Mass assignment: PUT /users/{id} accepts role field
+    """
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    import hashlib
+    import secrets
+    from typing import Optional
+
+    from fastapi import APIRouter, Depends, HTTPException, Query
+    from sqlalchemy.orm import Session
+
+    from database import get_db
+    from models import APIToken, Invite, OrgMembership, Organization, User
+    from schemas import (
+        APITokenCreate,
+        APITokenResponse,
+        InviteRequest,
+        MembershipResponse,
+        OrgCreate,
+        OrgResponse,
+        UserResponse,
+        UserUpdate,
+    )
+    from shared.auth import get_current_user
+
+    router = APIRouter(tags=["users"])
+
+
+    # ── Users ──────────────────────────────────────────────────────
+
+    @router.get("/users", response_model=list[UserResponse])
+    def list_users(
+        page: int = Query(1, ge=1),
+        page_size: int = Query(20),  # VULN: No max page_size — allows page_size=10000
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List all users.
+
+        VULN: No org_id filter — returns ALL users across all orgs.
+        VULN: No max page_size — allows bulk data harvesting.
+        VULN: Sequential integer IDs enable enumeration.
+        """
+        offset = (page - 1) * page_size
+        users = db.query(User).offset(offset).limit(page_size).all()
+        return users
+
+
+    @router.get("/users/{user_id}", response_model=UserResponse)
+    def get_user(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Get user by ID.
+
+        VULN: BOLA — any authenticated user can access any user's profile.
+        VULN: Returns ssn_last4, internal_notes, password_hash.
+        """
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+
+
+    @router.put("/users/{user_id}", response_model=UserResponse)
+    def update_user(
+        user_id: int,
+        update: UserUpdate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Update user profile.
+
+        VULN: BOLA — no ownership check, any user can update any user.
+        VULN: Mass assignment — accepts 'role' field from client.
+        """
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # VULN: Applies all fields from request including 'role'
+        for field, value in update.model_dump(exclude_unset=True).items():
+            setattr(user, field, value)
+
+        db.commit()
+        db.refresh(user)
+        return user
+
+
+    @router.delete("/users/{user_id}")
+    def delete_user(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Delete user.
+
+        VULN: Broken function-level authorization — no admin role check.
+        Any authenticated user can delete any user.
+        """
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        db.delete(user)
+        db.commit()
+        return {"message": f"User {user_id} deleted"}
+
+
+    # ── Organizations ──────────────────────────────────────────────
+
+    @router.get("/orgs", response_model=list[OrgResponse])
+    def list_orgs(
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List all organizations."""
+        return db.query(Organization).all()
+
+
+    @router.post("/orgs", response_model=OrgResponse)
+    def create_org(
+        org: OrgCreate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Create a new organization."""
+        new_org = Organization(
+            name=org.name,
+            slug=org.slug,
+            owner_id=current_user["user_id"],
+        )
+        db.add(new_org)
+        db.commit()
+        db.refresh(new_org)
+
+        # Auto-add creator as owner
+        membership = OrgMembership(
+            user_id=current_user["user_id"],
+            org_id=new_org.id,
+            role="owner",
+        )
+        db.add(membership)
+        db.commit()
+        return new_org
+
+
+    @router.get("/orgs/{org_id}", response_model=OrgResponse)
+    def get_org(
+        org_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Get organization details.
+
+        VULN: BOLA — no membership check.
+        """
+        org = db.query(Organization).filter(Organization.id == org_id).first()
+        if not org:
+            raise HTTPException(status_code=404, detail="Organization not found")
+        return org
+
+
+    @router.get("/orgs/{org_id}/members", response_model=list[MembershipResponse])
+    def list_members(
+        org_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List organization members.
+
+        VULN: BOLA — any user can list any org's members.
+        """
+        members = db.query(OrgMembership).filter(OrgMembership.org_id == org_id).all()
+        return members
+
+
+    @router.post("/orgs/{org_id}/invite")
+    def invite_member(
+        org_id: int,
+        invite_req: InviteRequest,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Invite a user to an organization."""
+        token = secrets.token_urlsafe(32)
+        invite = Invite(
+            org_id=org_id,
+            email=invite_req.email,
+            role=invite_req.role,
+            token=token,
+        )
+        db.add(invite)
+        db.commit()
+        return {"invite_token": token, "email": invite_req.email}
+
+
+    # ── API Tokens ─────────────────────────────────────────────────
+
+    @router.post("/orgs/{org_id}/api-tokens", response_model=APITokenResponse)
+    def create_api_token(
+        org_id: int,
+        token_req: APITokenCreate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Create an API token.
+
+        VULN: Returns plaintext token in response AND stores it in DB.
+        """
+        raw_token = secrets.token_urlsafe(48)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+
+        api_token = APIToken(
+            user_id=current_user["user_id"],
+            org_id=org_id,
+            token_hash=token_hash,
+            token_plain=raw_token,  # VULN: Stored in plaintext
+            name=token_req.name,
+            scopes=token_req.scopes,
+        )
+        db.add(api_token)
+        db.commit()
+        db.refresh(api_token)
+        return api_token
+
+
+    @router.get("/orgs/{org_id}/api-tokens", response_model=list[APITokenResponse])
+    def list_api_tokens(
+        org_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List API tokens for an organization.
+
+        VULN: Returns plaintext token values.
+        VULN: BOLA — no org membership check.
+        """
+        tokens = db.query(APIToken).filter(APIToken.org_id == org_id).all()
+        return tokens
+
+  schemas.py: |
+    """User service Pydantic schemas."""
+
+    from pydantic import BaseModel
+    from typing import Optional
+    from datetime import datetime
+
+
+    class UserResponse(BaseModel):
+        """VULN: Returns sensitive fields — ssn_last4, internal_notes, password_hash."""
+        id: int
+        auth_user_id: int
+        email: str
+        full_name: str
+        phone: str
+        ssn_last4: str          # VULN: PII exposed
+        internal_notes: str     # VULN: Internal data exposed
+        password_hash: str      # VULN: Hash exposed
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class UserUpdate(BaseModel):
+        full_name: Optional[str] = None
+        phone: Optional[str] = None
+        email: Optional[str] = None
+        role: Optional[str] = None  # VULN: mass assignment — role update from client
+
+
+    class OrgCreate(BaseModel):
+        name: str
+        slug: str
+
+
+    class OrgResponse(BaseModel):
+        id: int
+        name: str
+        slug: str
+        owner_id: int
+        plan_type: str
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class MembershipResponse(BaseModel):
+        id: int
+        user_id: int
+        org_id: int
+        role: str
+        joined_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class InviteRequest(BaseModel):
+        email: str
+        role: str = "member"
+
+
+    class APITokenCreate(BaseModel):
+        name: str = "default"
+        scopes: str = "read"
+
+
+    class APITokenResponse(BaseModel):
+        """VULN: Returns plaintext token."""
+        id: int
+        name: str
+        scopes: str
+        token_plain: str    # VULN: Plaintext API token in response
+        token_hash: str     # VULN: Hash also exposed
+        last_used: Optional[datetime] = None
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True

@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-seed-script
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "dvp.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+data:
+  seed_data.py: |
+    import hashlib, os, secrets, sys
+    from datetime import datetime, timedelta, timezone
+    from passlib.context import CryptContext
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.orm import sessionmaker
+
+    PG_USER = os.getenv("POSTGRES_USER", "platform_admin")
+    PG_PASS = os.getenv("POSTGRES_PASSWORD", "platform_secret_2024")
+    PG_HOST = os.getenv("POSTGRES_HOST", "localhost")
+    PG_PORT = os.getenv("POSTGRES_PORT", "5432")
+
+    DB_URLS = {
+        "auth": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/auth_db",
+        "user": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/user_db",
+        "project": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/project_db",
+        "billing": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/billing_db",
+        "payment": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/payment_db",
+        "notification": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/notification_db",
+        "reporting": f"postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/reporting_db",
+    }
+
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    DEFAULT_PASSWORD = "Password123!"
+    now = datetime.now(timezone.utc)
+
+    def get_session(db_key):
+        engine = create_engine(DB_URLS[db_key])
+        return sessionmaker(bind=engine)()
+
+    def seed_auth():
+        s = get_session("auth")
+        s.execute(text("CREATE TABLE IF NOT EXISTS auth_users (id SERIAL PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, role VARCHAR(50) DEFAULT 'user', is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMP DEFAULT NOW())"))
+        s.execute(text("CREATE TABLE IF NOT EXISTS refresh_tokens (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, token VARCHAR(500) UNIQUE NOT NULL, expires_at TIMESTAMP NOT NULL, revoked BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW())"))
+        s.commit()
+        for email, role in [("admin@acme.com","admin"),("alice@acme.com","user"),("bob@acme.com","viewer"),("admin@globex.com","admin"),("eve@globex.com","user"),("system@internal","admin")]:
+            s.execute(text("INSERT INTO auth_users (email, password_hash, role, is_active) VALUES (:e, :p, :r, TRUE) ON CONFLICT (email) DO NOTHING"), {"e": email, "p": pwd_context.hash(DEFAULT_PASSWORD), "r": role})
+        s.commit()
+        print("[auth] Seeded 6 users")
+        s.close()
+
+    def seed_users():
+        s = get_session("user")
+        for ddl in [
+            "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, auth_user_id INTEGER UNIQUE NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, full_name VARCHAR(255) DEFAULT '', phone VARCHAR(50) DEFAULT '', ssn_last4 VARCHAR(4) DEFAULT '', internal_notes TEXT DEFAULT '', password_hash VARCHAR(255) DEFAULT '', created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS organizations (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, slug VARCHAR(255) UNIQUE NOT NULL, owner_id INTEGER NOT NULL, plan_type VARCHAR(50) DEFAULT 'free', created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS org_memberships (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, org_id INTEGER NOT NULL, role VARCHAR(50) DEFAULT 'member', invited_by INTEGER, joined_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS api_tokens (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, org_id INTEGER NOT NULL, token_hash VARCHAR(255) NOT NULL, token_plain VARCHAR(255) NOT NULL, name VARCHAR(255) DEFAULT 'default', scopes VARCHAR(500) DEFAULT 'read', last_used TIMESTAMP, created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS invites (id SERIAL PRIMARY KEY, org_id INTEGER NOT NULL, email VARCHAR(255) NOT NULL, role VARCHAR(50) DEFAULT 'member', token VARCHAR(255) UNIQUE NOT NULL, accepted BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW())",
+        ]:
+            s.execute(text(ddl))
+        s.commit()
+        users_data = [
+            (1,1,"admin@acme.com","Admin Acme","+1-555-0101","1234","System administrator"),
+            (2,2,"alice@acme.com","Alice Smith","+1-555-0102","5678","Regular engineer"),
+            (3,3,"bob@acme.com","Bob Jones","+1-555-0103","9012","Read-only auditor"),
+            (4,4,"admin@globex.com","Admin Globex","+1-555-0201","3456","Globex admin"),
+            (5,5,"eve@globex.com","Eve Hacker","+1-555-0202","7890","Security tester"),
+            (6,6,"system@internal","System Account","","","Internal service account"),
+        ]
+        for uid, auth_id, email, name, phone, ssn, notes in users_data:
+            s.execute(text("INSERT INTO users (id, auth_user_id, email, full_name, phone, ssn_last4, internal_notes, password_hash) VALUES (:id,:a,:e,:n,:p,:s,:no,:ph) ON CONFLICT (email) DO NOTHING"),
+                {"id":uid,"a":auth_id,"e":email,"n":name,"p":phone,"s":ssn,"no":notes,"ph":pwd_context.hash(DEFAULT_PASSWORD)})
+        s.execute(text("INSERT INTO organizations (id,name,slug,owner_id,plan_type) VALUES (1,'Acme Corp','acme',1,'pro') ON CONFLICT (slug) DO NOTHING"))
+        s.execute(text("INSERT INTO organizations (id,name,slug,owner_id,plan_type) VALUES (2,'Globex Inc','globex',4,'starter') ON CONFLICT (slug) DO NOTHING"))
+        for uid, oid, role in [(1,1,"owner"),(2,1,"member"),(3,1,"viewer"),(4,2,"owner"),(5,2,"member")]:
+            s.execute(text("INSERT INTO org_memberships (user_id,org_id,role) VALUES (:u,:o,:r)"), {"u":uid,"o":oid,"r":role})
+        for oid in [1,2]:
+            raw = secrets.token_urlsafe(48)
+            s.execute(text("INSERT INTO api_tokens (user_id,org_id,token_hash,token_plain,name,scopes) VALUES (:u,:o,:h,:p,:n,:s)"),
+                {"u":oid,"o":oid,"h":hashlib.sha256(raw.encode()).hexdigest(),"p":raw,"n":f"org-{oid}-token","s":"read,write"})
+        s.commit()
+        print("[user] Seeded users, orgs, memberships, tokens")
+        s.close()
+
+    def seed_projects():
+        s = get_session("project")
+        for ddl in [
+            "CREATE TABLE IF NOT EXISTS projects (id SERIAL PRIMARY KEY, org_id INTEGER NOT NULL, name VARCHAR(255) NOT NULL, description TEXT DEFAULT '', status VARCHAR(50) DEFAULT 'active', created_by INTEGER NOT NULL, created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, project_id INTEGER NOT NULL, title VARCHAR(255) NOT NULL, description TEXT DEFAULT '', assignee_id INTEGER, status VARCHAR(50) DEFAULT 'todo', priority VARCHAR(50) DEFAULT 'medium', created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS comments (id SERIAL PRIMARY KEY, task_id INTEGER NOT NULL, author_id INTEGER NOT NULL, body TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW())",
+        ]:
+            s.execute(text(ddl))
+        s.commit()
+        pid, tid = 1, 1
+        for org_id, owner in [(1,1),(2,4)]:
+            for i in range(1,4):
+                s.execute(text("INSERT INTO projects (id,org_id,name,description,status,created_by) VALUES (:id,:org,:n,:d,'active',:o) ON CONFLICT DO NOTHING"),
+                    {"id":pid,"org":org_id,"n":f"Project {i} (Org {org_id})","d":f"Test project {i}","o":owner})
+                for j in range(1,6):
+                    s.execute(text("INSERT INTO tasks (id,project_id,title,description,assignee_id,status,priority) VALUES (:id,:p,:t,:d,:a,:s,:pr) ON CONFLICT DO NOTHING"),
+                        {"id":tid,"p":pid,"t":f"Task {j} in Project {i}","d":f"Description for task {j}","a":owner+(j%2),
+                         "s":["todo","in_progress","review","done"][j%4],"pr":["low","medium","high","urgent"][j%4]})
+                    tid += 1
+                pid += 1
+        s.commit()
+        print("[project] Seeded 6 projects, 30 tasks")
+        s.close()
+
+    def seed_billing():
+        s = get_session("billing")
+        for ddl in [
+            "CREATE TABLE IF NOT EXISTS subscriptions (id SERIAL PRIMARY KEY, org_id INTEGER NOT NULL, plan VARCHAR(50) DEFAULT 'free', status VARCHAR(50) DEFAULT 'active', started_at TIMESTAMP DEFAULT NOW(), expires_at TIMESTAMP)",
+            "CREATE TABLE IF NOT EXISTS invoices (id SERIAL PRIMARY KEY, org_id INTEGER NOT NULL, subscription_id INTEGER, amount FLOAT NOT NULL, tax FLOAT DEFAULT 0, discount FLOAT DEFAULT 0, status VARCHAR(50) DEFAULT 'pending', due_date TIMESTAMP, paid_at TIMESTAMP, created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS coupons (id SERIAL PRIMARY KEY, code VARCHAR(100) UNIQUE NOT NULL, discount_percent INTEGER NOT NULL, max_uses INTEGER DEFAULT 100, current_uses INTEGER DEFAULT 0, expires_at TIMESTAMP, is_active BOOLEAN DEFAULT TRUE)",
+            "CREATE TABLE IF NOT EXISTS applied_coupons (id SERIAL PRIMARY KEY, invoice_id INTEGER NOT NULL, coupon_id INTEGER NOT NULL, discount_amount FLOAT NOT NULL)",
+        ]:
+            s.execute(text(ddl))
+        s.commit()
+        s.execute(text("INSERT INTO subscriptions (id,org_id,plan,status,expires_at) VALUES (1,1,'pro','active',:e) ON CONFLICT DO NOTHING"), {"e":now+timedelta(days=365)})
+        s.execute(text("INSERT INTO subscriptions (id,org_id,plan,status,expires_at) VALUES (2,2,'starter','active',:e) ON CONFLICT DO NOTHING"), {"e":now+timedelta(days=30)})
+        for inv_id,org,sub,amt,tax,disc,st,due,paid in [
+            (1,1,1,99.99,8.0,0,"paid",now-timedelta(days=30),now-timedelta(days=25)),
+            (2,1,1,99.99,8.0,0,"pending",now+timedelta(days=5),None),
+            (3,2,2,29.99,2.4,0,"paid",now-timedelta(days=15),now-timedelta(days=10)),
+            (4,2,2,29.99,2.4,0,"draft",now+timedelta(days=20),None)]:
+            s.execute(text("INSERT INTO invoices (id,org_id,subscription_id,amount,tax,discount,status,due_date,paid_at) VALUES (:id,:o,:su,:a,:t,:d,:st,:du,:pa) ON CONFLICT DO NOTHING"),
+                {"id":inv_id,"o":org,"su":sub,"a":amt,"t":tax,"d":disc,"st":st,"du":due,"pa":paid})
+        s.execute(text("INSERT INTO coupons (id,code,discount_percent,max_uses,current_uses,expires_at,is_active) VALUES (1,'SAVE20',20,100,5,:e,TRUE) ON CONFLICT DO NOTHING"), {"e":now+timedelta(days=90)})
+        s.execute(text("INSERT INTO coupons (id,code,discount_percent,max_uses,current_uses,expires_at,is_active) VALUES (2,'HALFOFF',50,10,2,:e,TRUE) ON CONFLICT DO NOTHING"), {"e":now+timedelta(days=30)})
+        s.commit()
+        print("[billing] Seeded subscriptions, invoices, coupons")
+        s.close()
+
+    def seed_payments():
+        s = get_session("payment")
+        for ddl in [
+            "CREATE TABLE IF NOT EXISTS payments (id SERIAL PRIMARY KEY, invoice_id INTEGER NOT NULL, org_id INTEGER NOT NULL, amount FLOAT NOT NULL, method VARCHAR(50) DEFAULT 'card', card_number VARCHAR(20) DEFAULT '', card_expiry VARCHAR(10) DEFAULT '', status VARCHAR(50) DEFAULT 'pending', transaction_ref VARCHAR(255) DEFAULT '', created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS refunds (id SERIAL PRIMARY KEY, payment_id INTEGER NOT NULL, amount FLOAT NOT NULL, reason TEXT DEFAULT '', status VARCHAR(50) DEFAULT 'pending', requested_by INTEGER, approved_by INTEGER, created_at TIMESTAMP DEFAULT NOW())",
+        ]:
+            s.execute(text(ddl))
+        s.commit()
+        s.execute(text("INSERT INTO payments (id,invoice_id,org_id,amount,method,card_number,card_expiry,status,transaction_ref) VALUES (1,1,1,99.99,'card','4111111111111111','12/27','completed','TXN-001') ON CONFLICT DO NOTHING"))
+        s.execute(text("INSERT INTO payments (id,invoice_id,org_id,amount,method,card_number,card_expiry,status,transaction_ref) VALUES (2,3,2,29.99,'card','5500000000000004','06/26','completed','TXN-002') ON CONFLICT DO NOTHING"))
+        s.commit()
+        print("[payment] Seeded 2 payments")
+        s.close()
+
+    def seed_notifications():
+        s = get_session("notification")
+        for ddl in [
+            "CREATE TABLE IF NOT EXISTS notifications (id SERIAL PRIMARY KEY, user_id INTEGER, org_id INTEGER, type VARCHAR(100) DEFAULT '', title VARCHAR(255) NOT NULL, body TEXT DEFAULT '', channel VARCHAR(50) DEFAULT 'in_app', status VARCHAR(50) DEFAULT 'pending', metadata_json TEXT, webhook_response TEXT, created_at TIMESTAMP DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS notification_preferences (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, channel VARCHAR(50) NOT NULL, enabled BOOLEAN DEFAULT TRUE, webhook_url VARCHAR(500), created_at TIMESTAMP DEFAULT NOW())",
+        ]:
+            s.execute(text(ddl))
+        s.commit()
+        s.execute(text("INSERT INTO notifications (user_id,org_id,type,title,body,channel,status) VALUES (1,1,'payment','Payment Received','Invoice #1 paid successfully','in_app','sent')"))
+        s.execute(text("INSERT INTO notifications (user_id,org_id,type,title,body,channel,status) VALUES (4,2,'payment','Payment Received','Invoice #3 paid successfully','in_app','sent')"))
+        s.commit()
+        print("[notification] Seeded notifications")
+        s.close()
+
+    def seed_reporting():
+        s = get_session("reporting")
+        s.execute(text("CREATE TABLE IF NOT EXISTS reports (id SERIAL PRIMARY KEY, org_id INTEGER NOT NULL, requested_by INTEGER NOT NULL, report_type VARCHAR(50) NOT NULL, status VARCHAR(50) DEFAULT 'queued', parameters_json TEXT, file_path VARCHAR(500), created_at TIMESTAMP DEFAULT NOW())"))
+        s.commit()
+        s.execute(text("INSERT INTO reports (org_id,requested_by,report_type,status,parameters_json) VALUES (1,1,'billing','ready','{\"date_from\":\"2024-01-01\",\"date_to\":\"2024-12-31\"}')"))
+        s.commit()
+        print("[reporting] Seeded reports")
+        s.close()
+
+    print("=" * 60)
+    print("Seeding Distributed Vulnerable Platform...")
+    print("=" * 60)
+    seed_auth()
+    seed_users()
+    seed_projects()
+    seed_billing()
+    seed_payments()
+    seed_notifications()
+    seed_reporting()
+    print("=" * 60)
+    print("Done! Password for all users: Password123!")
+    print("=" * 60)

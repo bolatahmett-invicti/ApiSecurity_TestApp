@@ -1,0 +1,1465 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Scan Results: payment-service",
+    "version": "1.0",
+    "description": "APIs discovered from payment-service (/code)",
+    "x-generated-by": "Invicti AI API Scanner v1.0.0",
+    "x-generated-at": "2026-03-04T11:28:28.193966",
+    "x-service-name": "payment-service"
+  },
+  "paths": {
+    "/Uvicorn ASGI": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:4599\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_UvicornASGI",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 4599,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API"
+        ]
+      }
+    },
+    "/api/v1/billing/invoices": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:43\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: MEDIUM\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_billing_invoices",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 43,
+        "x-risk-level": "MEDIUM",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "financial: \\bbilling\\b",
+          "Shadow API"
+        ]
+      }
+    },
+    "/api/v1/billing/invoices/{invoice_id}": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:43\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_billing_invoices_invoice_id",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 43,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "financial: \\bbilling\\b",
+          "Shadow API",
+          "BOLA: GET on /api/v1/billing/invoices/{invoice_id} WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/billing/invoices/{invoice_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: invoice_id"
+          }
+        ]
+      }
+    },
+    "/api/v1/billing/invoices/{invoice_id}/pay": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:99\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_billing_invoices_invoice_id_pay",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 99,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "financial: \\bbilling\\b",
+          "Shadow API",
+          "BOLA: GET on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: invoice_id"
+          }
+        ]
+      },
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:99\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "post_api_v1_billing_invoices_invoice_id_pay",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 99,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "financial: \\bbilling\\b",
+          "Mutation: POST",
+          "Shadow API",
+          "BOLA: POST on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "POST on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: invoice_id"
+          }
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/currencies": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:2551\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_currencies",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 2551,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API"
+        ]
+      }
+    },
+    "/api/v1/payment-methods": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1932\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: MEDIUM\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_paymentmethods",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1932,
+        "x-risk-level": "MEDIUM",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "financial: \\bpayment\\b",
+          "Shadow API"
+        ]
+      }
+    },
+    "/api/v1/payments": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1943\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_payments",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1943,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API"
+        ]
+      },
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1943\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "post_api_v1_payments",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1943,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{transaction_id}": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1943\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_payments_transaction_id",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1943,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API",
+          "BOLA: GET on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: transaction_id"
+          }
+        ]
+      }
+    },
+    "/api/v1/payments/{transaction_id}/capture": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1943\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: MEDIUM\nAuth Status: UNKNOWN",
+        "operationId": "post_api_v1_payments_transaction_id_capture",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1943,
+        "x-risk-level": "MEDIUM",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API",
+          "BOLA: POST on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "POST on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: transaction_id"
+          }
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1943\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_payments_transaction_id_capture",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1943,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API",
+          "BOLA: GET on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: transaction_id"
+          }
+        ]
+      }
+    },
+    "/api/v1/payments/{transaction_id}/void": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:2473\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: MEDIUM\nAuth Status: UNKNOWN",
+        "operationId": "post_api_v1_payments_transaction_id_void",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 2473,
+        "x-risk-level": "MEDIUM",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API",
+          "BOLA: POST on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "POST on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: transaction_id"
+          }
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:2473\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_payments_transaction_id_void",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 2473,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API",
+          "BOLA: GET on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: transaction_id"
+          }
+        ]
+      }
+    },
+    "/api/v1/refunds": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:3087\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_refunds",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 3087,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API"
+        ]
+      },
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:3087\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "post_api_v1_refunds",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 3087,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/refunds/{refund_id}": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:3621\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_refunds_refund_id",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 3621,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API",
+          "BOLA: GET on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "refund_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: refund_id"
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:613\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_subscriptions",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 613,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API"
+        ]
+      },
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:613\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "post_api_v1_subscriptions",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 613,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/{subscription_id}": {
+      "delete": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:613\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "delete_api_v1_subscriptions_subscription_id",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 613,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: DELETE",
+          "Shadow API",
+          "BOLA: DELETE on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "critical",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.3,
+          "details": "DELETE on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: subscription_id"
+          }
+        ]
+      },
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:613\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "get_api_v1_subscriptions_subscription_id",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 613,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Shadow API",
+          "BOLA: GET on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.0,
+          "details": "GET on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: subscription_id"
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:4610\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: INFO\nAuth Status: PUBLIC",
+        "operationId": "get_health",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 4610,
+        "x-risk-level": "INFO",
+        "x-auth-status": "PUBLIC",
+        "security": []
+      }
+    },
+    "/health/live": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:4630\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: INFO\nAuth Status: PUBLIC",
+        "operationId": "get_health_live",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 4630,
+        "x-risk-level": "INFO",
+        "x-auth-status": "PUBLIC",
+        "security": []
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:4641\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: INFO\nAuth Status: PUBLIC",
+        "operationId": "get_health_ready",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 4641,
+        "x-risk-level": "INFO",
+        "x-auth-status": "PUBLIC",
+        "security": []
+      }
+    },
+    "/internal/admin/database/reset": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:688\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "post_internal_admin_database_reset",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 688,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "admin: \\badmin\\b",
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/admin/export": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1060\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "post_internal_admin_export",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1060,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "admin: \\badmin\\b",
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/admin/refund-batch": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:1464\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "post_internal_admin_refundbatch",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 1464,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "admin: \\badmin\\b",
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/admin/transactions": {
+      "get": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:9\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: HIGH\nAuth Status: UNKNOWN",
+        "operationId": "get_internal_admin_transactions",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 9,
+        "x-risk-level": "HIGH",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "admin: \\badmin\\b",
+          "Shadow API"
+        ]
+      }
+    },
+    "/internal/admin/transactions/{transaction_id}": {
+      "delete": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:9\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: CRITICAL\nAuth Status: UNKNOWN",
+        "operationId": "delete_internal_admin_transactions_transaction_id",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 9,
+        "x-risk-level": "CRITICAL",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "admin: \\badmin\\b",
+          "Mutation: DELETE",
+          "Shadow API",
+          "BOLA: DELETE on /internal/admin/transactions/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        ],
+        "x-bola-risk": {
+          "risk": "critical",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "confidence": 0.3,
+          "details": "DELETE on /internal/admin/transactions/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path parameter: transaction_id"
+          }
+        ]
+      }
+    },
+    "/webhooks/paypal": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:3792\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "post_webhooks_paypal",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 3792,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/stripe": {
+      "post": {
+        "summary": "OpenAPI-Spec endpoint",
+        "description": "Discovered from [openapi.json]:4200\n\nFramework: OpenAPI-Spec\nLanguage: Unknown\nRisk Level: LOW\nAuth Status: UNKNOWN",
+        "operationId": "post_webhooks_stripe",
+        "tags": [
+          "OpenAPI-Spec",
+          "Unknown"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "x-source-file": "/code/output/openapi.json",
+        "x-source-line": 4200,
+        "x-risk-level": "LOW",
+        "x-auth-status": "UNKNOWN",
+        "x-risk-reasons": [
+          "Mutation: POST",
+          "Shadow API"
+        ],
+        "requestBody": {
+          "description": "Request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  }
+}

@@ -1,0 +1,607 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-gateway-code
+  namespace: {{ .Release.Namespace }}
+data:
+  main.py: |
+    """API Gateway — routes all incoming requests to internal microservices.
+
+    INTENTIONAL VULNERABILITIES:
+    - Adds X-Gateway-Auth header that downstream services might trust
+    - No rate limiting on any route
+    - Forwards all headers including attacker-injected ones (X-Service-Name, X-Admin-Role)
+    - Debug mode exposes stack traces
+    """
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    import os
+    import httpx
+    import uvicorn
+    from fastapi import FastAPI, Request, Response
+    from fastapi.responses import JSONResponse
+
+    app = FastAPI(
+        title="API Gateway",
+        description="Central entry point for the Distributed Vulnerable Platform. Routes requests to microservices.",
+        version="1.0.0",
+        debug=True,  # VULN: Stack traces exposed
+    )
+
+    # Service routing map
+    SERVICE_MAP = {
+        "/api/auth": os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001"),
+        "/api/users": os.getenv("USER_SERVICE_URL", "http://user-service:8002"),
+        "/api/orgs": os.getenv("USER_SERVICE_URL", "http://user-service:8002"),
+        "/api/projects": os.getenv("PROJECT_SERVICE_URL", "http://project-service:8003"),
+        "/api/tasks": os.getenv("PROJECT_SERVICE_URL", "http://project-service:8003"),
+        "/api/billing": os.getenv("BILLING_SERVICE_URL", "http://billing-service:8004"),
+        "/api/payments": os.getenv("PAYMENT_SERVICE_URL", "http://payment-service:8005"),
+        "/api/notifications": os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-service:8006"),
+        "/api/reports": os.getenv("REPORTING_SERVICE_URL", "http://reporting-service:8007"),
+    }
+
+
+    def _resolve_backend(path: str) -> tuple[str, str] | None:
+        """Find the backend service URL for a given request path."""
+        for prefix, service_url in SERVICE_MAP.items():
+            if path.startswith(prefix):
+                # Strip /api prefix, forward the rest
+                backend_path = path[len("/api"):]
+                return service_url, backend_path
+        return None
+
+
+    @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+    async def proxy(request: Request, path: str):
+        """Reverse proxy to backend services.
+
+        VULN: Forwards ALL headers to backend, including attacker-controlled ones
+        like X-Service-Name and X-Admin-Role.
+        VULN: Adds X-Gateway-Auth header that backends might blindly trust.
+        VULN: No rate limiting.
+        """
+        full_path = f"/api/{path}"
+        resolved = _resolve_backend(full_path)
+
+        if not resolved:
+            return JSONResponse(status_code=404, content={"detail": "Service not found"})
+
+        service_url, backend_path = resolved
+
+        # Build target URL with query string
+        target_url = f"{service_url}{backend_path}"
+        if request.url.query:
+            target_url += f"?{request.url.query}"
+
+        # Forward headers (VULN: includes attacker-injected headers)
+        headers = dict(request.headers)
+        headers.pop("host", None)
+        # VULN: Gateway adds trusted header that backends might trust without verification
+        headers["X-Gateway-Auth"] = "gateway-internal-trusted"
+        headers["X-Forwarded-For"] = request.client.host if request.client else "unknown"
+
+        # Read request body
+        body = await request.body()
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                resp = await client.request(
+                    method=request.method,
+                    url=target_url,
+                    headers=headers,
+                    content=body,
+                )
+                # Forward response headers (except hop-by-hop)
+                response_headers = {
+                    k: v for k, v in resp.headers.items()
+                    if k.lower() not in ("transfer-encoding", "content-encoding", "content-length")
+                }
+                return Response(
+                    content=resp.content,
+                    status_code=resp.status_code,
+                    headers=response_headers,
+                    media_type=resp.headers.get("content-type", "application/json"),
+                )
+            except httpx.ConnectError:
+                return JSONResponse(status_code=502, content={"detail": "Backend service unavailable"})
+            except httpx.TimeoutException:
+                return JSONResponse(status_code=504, content={"detail": "Backend service timeout"})
+
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok", "service": "gateway"}
+
+
+    from fastapi.responses import HTMLResponse
+
+    @app.get("/", response_class=HTMLResponse)
+    def root():
+        try:
+            with open("/app/ui.html", "r") as f:
+                return HTMLResponse(content=f.read())
+        except FileNotFoundError:
+            return HTMLResponse(content="<h1>UI not found</h1>", status_code=500)
+
+
+    if __name__ == "__main__":
+        import ssl
+        cert_file = "/etc/tls/tls.crt"
+        key_file = "/etc/tls/tls.key"
+        if os.path.exists(cert_file) and os.path.exists(key_file):
+            uvicorn.run(app, host="0.0.0.0", port=8443, ssl_keyfile=key_file, ssl_certfile=cert_file)
+        else:
+            uvicorn.run(app, host="0.0.0.0", port=8000)
+
+  ui.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVP - Distributed Vulnerable Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { font-family: 'Inter', system-ui, sans-serif; }
+      .json-view { background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto; }
+      .nav-btn { transition: all 0.15s; }
+      .nav-btn:hover { background: #334155; }
+      .nav-btn.active { background: #1e40af; color: white; }
+      .fade-in { animation: fadeIn 0.2s ease-in; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+      .vuln-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+    </style>
+    </head>
+    <body class="bg-gray-950 text-gray-100 min-h-screen">
+
+    <div id="app">
+      <!-- Login Screen -->
+      <div id="login-screen" class="flex items-center justify-center min-h-screen">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 w-full max-w-md shadow-2xl">
+          <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-red-400">DVP</h1>
+            <p class="text-gray-400 text-sm mt-1">Distributed Vulnerable Platform</p>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Email</label>
+              <input id="login-email" type="email" value="admin@acme.com"
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Password</label>
+              <input id="login-password" type="password" value="Password123!"
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <button onclick="doLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition">
+              Login
+            </button>
+            <div id="login-error" class="text-red-400 text-sm hidden"></div>
+            <div class="text-center text-gray-500 text-xs mt-4">
+              <p>Test accounts: admin@acme.com | alice@acme.com | eve@globex.com</p>
+              <p>Password: Password123!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main App -->
+      <div id="main-app" class="hidden">
+        <!-- Top Bar -->
+        <header class="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+          <div class="flex items-center gap-4">
+            <h1 class="text-lg font-bold text-red-400">DVP</h1>
+            <span id="user-badge" class="text-xs bg-gray-800 text-gray-300 px-3 py-1 rounded-full"></span>
+          </div>
+          <div class="flex items-center gap-3">
+            <select id="user-switcher" onchange="switchUser(this.value)" class="bg-gray-800 border border-gray-700 text-sm rounded-lg px-3 py-1.5 text-gray-300">
+              <option value="admin@acme.com">admin@acme.com (Acme Admin)</option>
+              <option value="alice@acme.com">alice@acme.com (Acme User)</option>
+              <option value="bob@acme.com">bob@acme.com (Acme Viewer)</option>
+              <option value="admin@globex.com">admin@globex.com (Globex Admin)</option>
+              <option value="eve@globex.com">eve@globex.com (Globex User)</option>
+            </select>
+            <button onclick="doLogout()" class="text-gray-400 hover:text-white text-sm px-3 py-1.5 border border-gray-700 rounded-lg">Logout</button>
+          </div>
+        </header>
+
+        <div class="flex">
+          <!-- Sidebar -->
+          <nav class="w-56 bg-gray-900 border-r border-gray-800 min-h-[calc(100vh-52px)] p-3 space-y-1">
+            <button onclick="showPage('dashboard')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="dashboard">Dashboard</button>
+            <button onclick="showPage('users')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="users">
+              Users <span class="vuln-badge bg-red-900 text-red-300 ml-1">BOLA</span>
+            </button>
+            <button onclick="showPage('orgs')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="orgs">Organizations</button>
+            <button onclick="showPage('projects')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="projects">
+              Projects <span class="vuln-badge bg-red-900 text-red-300 ml-1">BOLA</span>
+            </button>
+            <button onclick="showPage('billing')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="billing">
+              Billing <span class="vuln-badge bg-orange-900 text-orange-300 ml-1">BYPASS</span>
+            </button>
+            <button onclick="showPage('payments')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="payments">
+              Payments <span class="vuln-badge bg-yellow-900 text-yellow-300 ml-1">RACE</span>
+            </button>
+            <button onclick="showPage('notifications')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="notifications">Notifications</button>
+            <button onclick="showPage('reports')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="reports">Reports</button>
+            <div class="border-t border-gray-800 my-3"></div>
+            <button onclick="showPage('api')" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300" data-page="api">API Explorer</button>
+          </nav>
+
+          <!-- Content -->
+          <main id="content" class="flex-1 p-6 fade-in"></main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    let TOKEN = '';
+    let CURRENT_USER = null;
+    const API = '';
+
+    async function api(method, path, body) {
+      const opts = { method, headers: { 'Authorization': 'Bearer ' + TOKEN } };
+      if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+      const r = await fetch(API + path, opts);
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = text; }
+      return { status: r.status, data, ok: r.ok };
+    }
+
+    function json(obj) { return JSON.stringify(obj, null, 2); }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      try {
+        const r = await fetch(API + '/api/auth/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await r.json();
+        if (r.ok) {
+          TOKEN = data.access_token;
+          const payload = JSON.parse(atob(TOKEN.split('.')[1]));
+          CURRENT_USER = payload;
+          document.getElementById('login-screen').classList.add('hidden');
+          document.getElementById('main-app').classList.remove('hidden');
+          document.getElementById('user-badge').textContent = `${payload.email} | org:${payload.org_id} | ${payload.role}`;
+          document.getElementById('user-switcher').value = email;
+          showPage('dashboard');
+        } else {
+          document.getElementById('login-error').textContent = data.detail || 'Login failed';
+          document.getElementById('login-error').classList.remove('hidden');
+        }
+      } catch (e) {
+        document.getElementById('login-error').textContent = 'Connection error: ' + e.message;
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    }
+
+    async function switchUser(email) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = 'Password123!';
+      await doLogin();
+    }
+
+    function doLogout() {
+      TOKEN = ''; CURRENT_USER = null;
+      document.getElementById('main-app').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    function showPage(page) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+      const c = document.getElementById('content');
+      c.classList.remove('fade-in');
+      void c.offsetWidth;
+      c.classList.add('fade-in');
+      const pages = { dashboard: pageDashboard, users: pageUsers, orgs: pageOrgs, projects: pageProjects, billing: pageBilling, payments: pagePayments, notifications: pageNotifications, reports: pageReports, api: pageAPI };
+      (pages[page] || pageDashboard)();
+    }
+
+    function card(title, content, vuln) {
+      const vb = vuln ? `<span class="vuln-badge bg-red-900 text-red-300">${vuln}</span>` : '';
+      return `<div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-4"><div class="flex items-center gap-2 mb-3"><h3 class="text-lg font-semibold">${title}</h3>${vb}</div>${content}</div>`;
+    }
+
+    function table(headers, rows) {
+      const th = headers.map(h => `<th class="text-left px-4 py-2 text-xs text-gray-400 font-medium uppercase">${h}</th>`).join('');
+      const tr = rows.map(r => `<tr class="border-t border-gray-800 hover:bg-gray-800/50">${r.map(c => `<td class="px-4 py-2.5 text-sm">${c}</td>`).join('')}</tr>`).join('');
+      return `<div class="overflow-x-auto"><table class="w-full"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table></div>`;
+    }
+
+    function resultBox(id) { return `<div id="${id}" class="json-view mt-3 hidden"></div>`; }
+
+    function showResult(id, data) {
+      const el = document.getElementById(id);
+      el.textContent = typeof data === 'string' ? data : json(data);
+      el.classList.remove('hidden');
+    }
+
+    function btn(text, onclick, color = 'blue') {
+      return `<button onclick="${onclick}" class="bg-${color}-600 hover:bg-${color}-700 text-white text-sm px-4 py-2 rounded-lg transition">${text}</button>`;
+    }
+
+    // --- PAGES ---
+
+    function pageDashboard() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Dashboard</h2>
+        ${card('Current Session', `
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="text-gray-400">User:</span> ${CURRENT_USER?.email}</div>
+            <div><span class="text-gray-400">Role:</span> <span class="font-mono bg-gray-800 px-2 py-0.5 rounded">${CURRENT_USER?.role}</span></div>
+            <div><span class="text-gray-400">Org ID:</span> ${CURRENT_USER?.org_id}</div>
+            <div><span class="text-gray-400">User ID:</span> ${CURRENT_USER?.user_id}</div>
+          </div>
+          <div class="mt-3"><span class="text-gray-400 text-sm">JWT Token:</span><div class="json-view mt-1 text-xs break-all">${TOKEN}</div></div>
+        `)}
+        ${card('Vulnerability Categories', `
+          <div class="grid grid-cols-3 gap-3 text-sm">
+            <div class="bg-red-950/50 border border-red-900/50 rounded-lg p-3"><div class="font-semibold text-red-400">BOLA</div><div class="text-gray-400 text-xs mt-1">Users, Projects, Invoices, Payments, Reports</div></div>
+            <div class="bg-orange-950/50 border border-orange-900/50 rounded-lg p-3"><div class="font-semibold text-orange-400">Broken Function Auth</div><div class="text-xs text-gray-400 mt-1">DELETE user, Create coupon, Approve refund</div></div>
+            <div class="bg-yellow-950/50 border border-yellow-900/50 rounded-lg p-3"><div class="font-semibold text-yellow-400">Workflow Bypass</div><div class="text-xs text-gray-400 mt-1">Refund unpaid invoice, Skip payment</div></div>
+            <div class="bg-purple-950/50 border border-purple-900/50 rounded-lg p-3"><div class="font-semibold text-purple-400">Race Condition</div><div class="text-xs text-gray-400 mt-1">Concurrent payments, Coupon replay</div></div>
+            <div class="bg-blue-950/50 border border-blue-900/50 rounded-lg p-3"><div class="font-semibold text-blue-400">Data Exposure</div><div class="text-xs text-gray-400 mt-1">SSN, password hash, API tokens in response</div></div>
+            <div class="bg-green-950/50 border border-green-900/50 rounded-lg p-3"><div class="font-semibold text-green-400">Bulk Harvest</div><div class="text-xs text-gray-400 mt-1">No pagination limit, cross-org listing</div></div>
+          </div>
+        `)}
+      `;
+    }
+
+    async function pageUsers() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Users</h2>
+        ${card('All Users', `
+          <p class="text-sm text-gray-400 mb-3">Lists ALL users across ALL organizations. No org-level filtering.</p>
+          ${btn('Load Users', 'loadUsers()')} ${btn('Load User by ID', 'loadUserById()', 'gray')}
+          <input id="user-id-input" type="number" value="5" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20 ml-2">
+          ${resultBox('users-result')}
+        `, 'BOLA + DATA EXPOSURE')}
+        ${card('Delete User (Broken Function Auth)', `
+          <p class="text-sm text-gray-400 mb-3">Any authenticated user can delete any user — no admin check.</p>
+          <input id="delete-user-id" type="number" value="3" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('DELETE User', 'deleteUser()', 'red')}
+          ${resultBox('delete-result')}
+        `, 'BROKEN FUNC AUTH')}
+      `;
+    }
+    async function loadUsers() {
+      const r = await api('GET', '/api/users?page_size=100');
+      showResult('users-result', r.data);
+    }
+    async function loadUserById() {
+      const id = document.getElementById('user-id-input').value;
+      const r = await api('GET', '/api/users/' + id);
+      showResult('users-result', r.data);
+    }
+    async function deleteUser() {
+      const id = document.getElementById('delete-user-id').value;
+      const r = await api('DELETE', '/api/users/' + id);
+      showResult('delete-result', { status: r.status, data: r.data });
+    }
+
+    async function pageOrgs() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Organizations</h2>
+        ${card('Organizations', `
+          ${btn('Load Orgs', 'loadOrgs()')}
+          ${resultBox('orgs-result')}
+        `)}
+        ${card('Org Members', `
+          <input id="org-id-input" type="number" value="1" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Load Members', 'loadMembers()')}
+          ${resultBox('members-result')}
+        `, 'BOLA')}
+        ${card('API Tokens', `
+          <p class="text-sm text-gray-400 mb-3">Returns plaintext API tokens — a critical sensitive data exposure.</p>
+          <input id="token-org-input" type="number" value="1" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Load Tokens', 'loadTokens()')}
+          ${resultBox('tokens-result')}
+        `, 'DATA EXPOSURE')}
+      `;
+    }
+    async function loadOrgs() { const r = await api('GET', '/api/orgs'); showResult('orgs-result', r.data); }
+    async function loadMembers() { const id = document.getElementById('org-id-input').value; const r = await api('GET', '/api/orgs/' + id + '/members'); showResult('members-result', r.data); }
+    async function loadTokens() { const id = document.getElementById('token-org-input').value; const r = await api('GET', '/api/orgs/' + id + '/api-tokens'); showResult('tokens-result', r.data); }
+
+    async function pageProjects() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Projects</h2>
+        ${card('All Projects (Cross-Org)', `
+          <p class="text-sm text-gray-400 mb-3">Returns projects from ALL orgs regardless of current user's org.</p>
+          ${btn('Load All Projects', 'loadProjects()')}
+          ${resultBox('projects-result')}
+        `, 'BOLA')}
+        ${card('Project Details', `
+          <input id="project-id-input" type="number" value="4" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Load Project', 'loadProject()')}
+          ${resultBox('project-detail')}
+        `, 'BOLA')}
+        ${card('Tasks', `
+          <input id="task-project-input" type="number" value="1" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Load Tasks', 'loadTasks()')}
+          ${resultBox('tasks-result')}
+        `)}
+      `;
+    }
+    async function loadProjects() { const r = await api('GET', '/api/projects'); showResult('projects-result', r.data); }
+    async function loadProject() { const id = document.getElementById('project-id-input').value; const r = await api('GET', '/api/projects/' + id); showResult('project-detail', r.data); }
+    async function loadTasks() { const id = document.getElementById('task-project-input').value; const r = await api('GET', '/api/projects/' + id + '/tasks'); showResult('tasks-result', r.data); }
+
+    async function pageBilling() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Billing</h2>
+        ${card('Subscriptions', `${btn('Load Subscriptions', 'loadSubs()')} ${resultBox('subs-result')}`)}
+        ${card('Invoices', `
+          ${btn('Load My Invoices', 'loadInvoices()')}
+          <span class="mx-2 text-gray-600">|</span>
+          <input id="invoice-id-input" type="number" value="3" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Get Invoice by ID', 'loadInvoice()')}
+          ${resultBox('invoices-result')}
+        `, 'BOLA')}
+        ${card('Refund Invoice (Workflow Bypass)', `
+          <p class="text-sm text-gray-400 mb-3">Can refund invoices in "pending" status — no payment required.</p>
+          <input id="refund-invoice-id" type="number" value="2" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Refund Invoice', 'refundInvoice()', 'red')}
+          ${resultBox('refund-result')}
+        `, 'WORKFLOW BYPASS')}
+        ${card('Create Coupon (Broken Function Auth)', `
+          <p class="text-sm text-gray-400 mb-3">Admin-only endpoint but any user can call it.</p>
+          <div class="flex gap-2">
+            <input id="coupon-code" type="text" value="EVIL99" placeholder="Code" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-32">
+            <input id="coupon-pct" type="number" value="99" placeholder="%" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+            ${btn('Create Coupon', 'createCoupon()', 'red')}
+          </div>
+          ${resultBox('coupon-result')}
+        `, 'BROKEN FUNC AUTH')}
+      `;
+    }
+    async function loadSubs() { const r = await api('GET', '/api/billing/subscriptions'); showResult('subs-result', r.data); }
+    async function loadInvoices() { const r = await api('GET', '/api/billing/invoices'); showResult('invoices-result', r.data); }
+    async function loadInvoice() { const id = document.getElementById('invoice-id-input').value; const r = await api('GET', '/api/billing/invoices/' + id); showResult('invoices-result', r.data); }
+    async function refundInvoice() { const id = document.getElementById('refund-invoice-id').value; const r = await api('POST', '/api/billing/invoices/' + id + '/refund', {}); showResult('refund-result', { status: r.status, data: r.data }); }
+    async function createCoupon() {
+      const code = document.getElementById('coupon-code').value;
+      const pct = document.getElementById('coupon-pct').value;
+      const r = await api('POST', '/api/billing/coupons', { code, discount_percent: parseInt(pct), max_uses: 1000 });
+      showResult('coupon-result', { status: r.status, data: r.data });
+    }
+
+    async function pagePayments() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Payments</h2>
+        ${card('Payments List', `
+          ${btn('Load Payments', 'loadPayments()')}
+          <span class="mx-2 text-gray-600">|</span>
+          <input id="payment-id-input" type="number" value="1" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-20">
+          ${btn('Get Payment', 'loadPayment()')}
+          ${resultBox('payments-result')}
+        `, 'BOLA + DATA EXPOSURE')}
+        ${card('Create Payment', `
+          <p class="text-sm text-gray-400 mb-3">No duplicate check — race condition allows double-charge.</p>
+          <div class="flex gap-2">
+            <input id="pay-invoice" type="number" value="2" placeholder="Invoice ID" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-28">
+            <input id="pay-amount" type="number" value="99.99" placeholder="Amount" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-28">
+            <input id="pay-card" type="text" value="4111111111111111" placeholder="Card" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-44">
+            ${btn('Pay', 'createPayment()', 'green')}
+          </div>
+          ${resultBox('pay-result')}
+        `, 'RACE CONDITION')}
+      `;
+    }
+    async function loadPayments() { const r = await api('GET', '/api/payments'); showResult('payments-result', r.data); }
+    async function loadPayment() { const id = document.getElementById('payment-id-input').value; const r = await api('GET', '/api/payments/' + id); showResult('payments-result', r.data); }
+    async function createPayment() {
+      const r = await api('POST', '/api/payments', {
+        invoice_id: parseInt(document.getElementById('pay-invoice').value),
+        amount: parseFloat(document.getElementById('pay-amount').value),
+        method: 'card', card_number: document.getElementById('pay-card').value, card_expiry: '12/27'
+      });
+      showResult('pay-result', { status: r.status, data: r.data });
+    }
+
+    async function pageNotifications() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Notifications</h2>
+        ${card('My Notifications', `${btn('Load', 'loadNotifications()')} ${resultBox('notif-result')}`)}
+        ${card('Send Notification (Fan-out)', `
+          <p class="text-sm text-gray-400 mb-3">target="all_users" fans out to every user from a single request.</p>
+          <div class="flex gap-2 flex-wrap">
+            <select id="notif-target" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+              <option value="user">user</option><option value="org">org</option><option value="all_users">all_users</option>
+            </select>
+            <input id="notif-title" type="text" value="Test Alert" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-40">
+            ${btn('Send', 'sendNotification()', 'orange')}
+          </div>
+          ${resultBox('send-notif-result')}
+        `, 'AMPLIFICATION')}
+      `;
+    }
+    async function loadNotifications() { const r = await api('GET', '/api/notifications'); showResult('notif-result', r.data); }
+    async function sendNotification() {
+      const r = await api('POST', '/api/notifications/send', {
+        target: document.getElementById('notif-target').value,
+        title: document.getElementById('notif-title').value,
+        body: 'Test notification from DVP UI', channel: 'in_app',
+        user_id: CURRENT_USER?.user_id, org_id: CURRENT_USER?.org_id
+      });
+      showResult('send-notif-result', { status: r.status, data: r.data });
+    }
+
+    async function pageReports() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Reports</h2>
+        ${card('Reports', `${btn('Load Reports', 'loadReports()')} ${resultBox('reports-result')}`)}
+        ${card('Generate Report (Resource Amplification)', `
+          <p class="text-sm text-gray-400 mb-3">No rate limit — can generate expensive reports repeatedly.</p>
+          <select id="report-type" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+            <option value="billing">billing</option><option value="usage">usage</option><option value="security">security</option>
+          </select>
+          ${btn('Generate', 'generateReport()', 'purple')}
+          ${resultBox('gen-report-result')}
+        `, 'AMPLIFICATION')}
+      `;
+    }
+    async function loadReports() { const r = await api('GET', '/api/reports'); showResult('reports-result', r.data); }
+    async function generateReport() {
+      const r = await api('POST', '/api/reports/generate', {
+        report_type: document.getElementById('report-type').value,
+        parameters: { date_from: '2020-01-01', date_to: '2030-12-31' }
+      });
+      showResult('gen-report-result', { status: r.status, data: r.data });
+    }
+
+    function pageAPI() {
+      document.getElementById('content').innerHTML = `
+        <h2 class="text-xl font-bold mb-4">API Explorer</h2>
+        ${card('Custom Request', `
+          <div class="space-y-3">
+            <div class="flex gap-2">
+              <select id="api-method" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-28">
+                <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option>
+              </select>
+              <input id="api-path" type="text" value="/api/users" placeholder="/api/..." class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm flex-1">
+              ${btn('Send', 'sendApiRequest()')}
+            </div>
+            <textarea id="api-body" placeholder='{"key": "value"}' rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm font-mono text-gray-300"></textarea>
+            <div class="flex gap-2">
+              <label class="text-sm text-gray-400">Extra Headers:</label>
+              <input id="api-header-name" type="text" placeholder="X-Service-Name" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-44">
+              <input id="api-header-value" type="text" placeholder="billing-service" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm w-44">
+            </div>
+            ${resultBox('api-result')}
+          </div>
+        `)}
+      `;
+    }
+    async function sendApiRequest() {
+      const method = document.getElementById('api-method').value;
+      const path = document.getElementById('api-path').value;
+      const bodyText = document.getElementById('api-body').value;
+      const headerName = document.getElementById('api-header-name').value;
+      const headerValue = document.getElementById('api-header-value').value;
+      const headers = { 'Authorization': 'Bearer ' + TOKEN };
+      if (headerName) headers[headerName] = headerValue;
+      const opts = { method, headers };
+      if (bodyText && method !== 'GET') {
+        headers['Content-Type'] = 'application/json';
+        opts.body = bodyText;
+      }
+      try {
+        const r = await fetch(API + path, opts);
+        const text = await r.text();
+        let data; try { data = JSON.parse(text); } catch { data = text; }
+        showResult('api-result', { status: r.status, headers: Object.fromEntries(r.headers), data });
+      } catch (e) { showResult('api-result', { error: e.message }); }
+    }
+    </script>
+    </body>
+    </html>

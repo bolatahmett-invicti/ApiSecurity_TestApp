@@ -1,0 +1,472 @@
+{
+  "timestamp": "2026-02-27T15:16:31.706904",
+  "scan_id": "54bbd166",
+  "target": "/code",
+  "version": "4.0.0",
+  "summary": {
+    "total": 9,
+    "files_scanned": 3,
+    "files_skipped": 2,
+    "files_errored": 0,
+    "by_language": {
+      "C#/.NET": 9
+    },
+    "by_risk": {
+      "INFO": 1,
+      "LOW": 7,
+      "HIGH": 1
+    },
+    "by_auth": {
+      "PUBLIC": 1,
+      "UNKNOWN": 8
+    },
+    "by_framework": {
+      "ASP.NET": 9
+    },
+    "by_kind": {
+      "Endpoint": 9
+    },
+    "shadow_apis": 8,
+    "critical": 1
+  },
+  "endpoints": [
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 127,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/admin/inventory/location/{location}",
+      "raw_match": "[HttpGet(\"admin/inventory/location/{location}\")]",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "GetByLocation",
+        "base_route": "api",
+        "method_route": "admin/inventory/location/{location}",
+        "parameters": [
+          {
+            "name": "location",
+            "type": "string",
+            "is_body": false,
+            "is_query": true,
+            "is_route": false,
+            "required": true,
+            "default": null,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "request_body": null,
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 29,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/inventory",
+      "raw_match": "[HttpGet(\"inventory\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "GetAll",
+        "base_route": "api",
+        "method_route": "inventory",
+        "parameters": [],
+        "request_body": null,
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 36,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/inventory/{id}",
+      "raw_match": "[HttpGet(\"inventory/{id}\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "GetById",
+        "base_route": "api",
+        "method_route": "inventory/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "is_body": false,
+            "is_query": true,
+            "is_route": false,
+            "required": true,
+            "default": null,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "request_body": null,
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 119,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/inventory/low-stock",
+      "raw_match": "[HttpGet(\"inventory/low-stock\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "GetLowStock",
+        "base_route": "api",
+        "method_route": "inventory/low-stock",
+        "parameters": [
+          {
+            "name": "threshold",
+            "type": "int",
+            "is_body": false,
+            "is_query": true,
+            "is_route": false,
+            "required": false,
+            "default": "100",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "request_body": null,
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 47,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/inventory",
+      "raw_match": "[HttpPost(\"inventory\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "Create",
+        "base_route": "api",
+        "method_route": "inventory",
+        "parameters": [],
+        "request_body": {
+          "name": "item",
+          "type": "InventoryItem",
+          "is_body": true,
+          "is_query": false,
+          "is_route": false,
+          "required": true,
+          "default": null,
+          "schema": {
+            "$ref": "#/components/schemas/InventoryItem"
+          }
+        },
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 89,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/inventory/reserve",
+      "raw_match": "[HttpPost(\"inventory/reserve\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "Reserve",
+        "base_route": "api",
+        "method_route": "inventory/reserve",
+        "parameters": [],
+        "request_body": {
+          "name": "request",
+          "type": "ReserveRequest",
+          "is_body": true,
+          "is_query": false,
+          "is_route": false,
+          "required": true,
+          "default": null,
+          "schema": {
+            "$ref": "#/components/schemas/ReserveRequest"
+          }
+        },
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 61,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "PUT",
+      "route": "/api/inventory/{id}",
+      "raw_match": "[HttpPut(\"inventory/{id}\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: PUT",
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "Update",
+        "base_route": "api",
+        "method_route": "inventory/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "is_body": false,
+            "is_query": true,
+            "is_route": false,
+            "required": true,
+            "default": null,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "request_body": {
+          "name": "request",
+          "type": "UpdateInventoryRequest",
+          "is_body": true,
+          "is_query": false,
+          "is_route": false,
+          "required": true,
+          "default": null,
+          "schema": {
+            "$ref": "#/components/schemas/UpdateInventoryRequest"
+          }
+        },
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 79,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "DELETE",
+      "route": "/api/inventory/{id}",
+      "raw_match": "[HttpDelete(\"inventory/{id}\")]",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: DELETE",
+        "Shadow API"
+      ],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "Delete",
+        "base_route": "api",
+        "method_route": "inventory/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "is_body": false,
+            "is_query": true,
+            "is_route": false,
+            "required": true,
+            "default": null,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "request_body": null,
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    },
+    {
+      "file_path": "/code/Controllers/InventoryController.cs",
+      "line_number": 17,
+      "language": "C#/.NET",
+      "framework": "ASP.NET",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/health",
+      "raw_match": "[HttpGet(\"health\")]",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "controller": "InventoryController",
+        "action": "Health",
+        "base_route": "api",
+        "method_route": "health",
+        "parameters": [],
+        "request_body": null,
+        "response_type": null,
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        }
+      }
+    }
+  ],
+  "policy_violations": [
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/inventory",
+        "method": "POST",
+        "file": "/code/Controllers/InventoryController.cs",
+        "line": 47,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/inventory/reserve",
+        "method": "POST",
+        "file": "/code/Controllers/InventoryController.cs",
+        "line": 89,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/inventory/{id}",
+        "method": "PUT",
+        "file": "/code/Controllers/InventoryController.cs",
+        "line": 61,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/inventory/{id}",
+        "method": "DELETE",
+        "file": "/code/Controllers/InventoryController.cs",
+        "line": 79,
+        "auth_status": "UNKNOWN"
+      }
+    }
+  ]
+}

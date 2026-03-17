@@ -122,7 +122,7 @@ jobs:
 
           # Build docker command
           # Path mapping:
-          #   Host: test-microservices/auth-service -> Container: /code (read-only)
+          #   Host: test-microservices -> Container: /code (read-only)
           #   Host: output/                         -> Container: /output
           # Scanner will scan: /code (auth-service only)
           DOCKER_CMD="docker run --rm \

@@ -1,0 +1,3359 @@
+{
+  "timestamp": "2026-03-04T11:02:16.280810",
+  "scan_id": "a65a2b11",
+  "target": "/code",
+  "version": "1.0.0",
+  "summary": {
+    "total": 74,
+    "files_scanned": 3,
+    "files_skipped": 0,
+    "files_errored": 0,
+    "by_language": {
+      "Unknown": 31,
+      "Python": 119
+    },
+    "by_risk": {
+      "CRITICAL": 2,
+      "HIGH": 14,
+      "LOW": 39,
+      "MEDIUM": 10,
+      "INFO": 9
+    },
+    "by_auth": {
+      "UNKNOWN": 65,
+      "PUBLIC": 9
+    },
+    "by_framework": {
+      "OpenAPI-Spec": 31,
+      "Flask": 25,
+      "Uvicorn": 1,
+      "Health": 3,
+      "Dynamic-Route": 14
+    },
+    "by_kind": {
+      "Endpoint": 73,
+      "Entry": 1
+    },
+    "shadow_apis": 65,
+    "critical": 16
+  },
+  "endpoints": [
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 9,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "DELETE",
+      "route": "/internal/admin/transactions/{transaction_id}",
+      "raw_match": "DELETE /internal/admin/transactions/{transaction_id}",
+      "risk_level": "CRITICAL",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: DELETE",
+        "Shadow API",
+        "BOLA: DELETE on /internal/admin/transactions/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "critical",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [
+            "mutation_on_resource_id"
+          ],
+          "confidence": 0.3,
+          "details": "DELETE on /internal/admin/transactions/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 587,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "DELETE",
+      "route": "/internal/admin/transactions/{transaction_id}",
+      "raw_match": "@app.delete(\"/internal/admin/transactions/{transaction_id}\"",
+      "risk_level": "CRITICAL",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: DELETE",
+        "Shadow API",
+        "BOLA: DELETE on /internal/admin/transactions/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "critical",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [
+            "mutation_on_resource_id"
+          ],
+          "confidence": 0.3,
+          "details": "DELETE on /internal/admin/transactions/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 19,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/billing/invoices/{invoice_id}",
+      "raw_match": "GET /api/v1/billing/invoices/{invoice_id}",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API",
+        "BOLA: GET on /api/v1/billing/invoices/{invoice_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/billing/invoices/{invoice_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 37,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+      "raw_match": "GET /api/v1/billing/invoices/{invoice_id}/pay",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API",
+        "BOLA: GET on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 37,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+      "raw_match": "POST /api/v1/billing/invoices/{invoice_id}/pay",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Mutation: POST",
+        "Shadow API",
+        "BOLA: POST on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "POST on /api/v1/billing/invoices/{invoice_id}/pay WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 63,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "DELETE",
+      "route": "/api/v1/subscriptions/{subscription_id}",
+      "raw_match": "DELETE /api/v1/subscriptions/{subscription_id}",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: DELETE",
+        "Shadow API",
+        "BOLA: DELETE on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "critical",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [
+            "mutation_on_resource_id"
+          ],
+          "confidence": 0.3,
+          "details": "DELETE on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 89,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/internal/admin/database/reset",
+      "raw_match": "POST /internal/admin/database/reset",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 99,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/internal/admin/export",
+      "raw_match": "POST /internal/admin/export",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 109,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/internal/admin/refund-batch",
+      "raw_match": "POST /internal/admin/refund-batch",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 9,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/internal/admin/transactions",
+      "raw_match": "GET /internal/admin/transactions",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 460,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+      "raw_match": "@app.post(\"/api/v1/billing/invoices/{invoice_id}/pay\"",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "POST /api/v1/billing/invoices/{invoice_id}/pay: ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 524,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "DELETE",
+      "route": "/api/v1/subscriptions/{subscription_id}",
+      "raw_match": "@app.delete(\"/api/v1/subscriptions/{subscription_id}\"",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: DELETE",
+        "Shadow API",
+        "BOLA: DELETE on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "critical",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [
+            "mutation_on_resource_id"
+          ],
+          "confidence": 0.3,
+          "details": "DELETE on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 547,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/internal/admin/transactions",
+      "raw_match": "@app.get(\"/internal/admin/transactions\"",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 556,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/internal/admin/refund-batch",
+      "raw_match": "@app.post(\"/internal/admin/refund-batch\"",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 569,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/internal/admin/export",
+      "raw_match": "@app.post(\"/internal/admin/export\"",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 596,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/internal/admin/database/reset",
+      "raw_match": "@app.post(\"/internal/admin/database/reset\"",
+      "risk_level": "HIGH",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "admin: \\badmin\\b",
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 19,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/billing/invoices",
+      "raw_match": "GET /api/v1/billing/invoices",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 147,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payment-methods",
+      "raw_match": "GET /api/v1/payment-methods",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bpayment\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 157,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/payments/{transaction_id}/capture",
+      "raw_match": "POST /api/v1/payments/{transaction_id}/capture",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API",
+        "BOLA: POST on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "POST on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 183,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/payments/{transaction_id}/void",
+      "raw_match": "POST /api/v1/payments/{transaction_id}/void",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API",
+        "BOLA: POST on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "POST on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 224,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payment-methods",
+      "raw_match": "@app.get(\"/api/v1/payment-methods\"",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bpayment\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 431,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/billing/invoices",
+      "raw_match": "@app.get(\"/api/v1/billing/invoices\"",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [
+            "regex_user_identity_access"
+          ],
+          "confidence": 0.4,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 448,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/billing/invoices/{invoice_id}",
+      "raw_match": "@app.get(\"/api/v1/billing/invoices/{invoice_id}\"",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "GET /api/v1/billing/invoices/{invoice_id}: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 431,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/billing/invoices",
+      "raw_match": "\"/api/v1/billing/invoices\"",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [
+            "regex_user_identity_access"
+          ],
+          "confidence": 0.4,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 448,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/billing/invoices/{invoice_id}",
+      "raw_match": "\"/api/v1/billing/invoices/{invoice_id}\"",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "ANY /api/v1/billing/invoices/{invoice_id}: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 460,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+      "raw_match": "\"/api/v1/billing/invoices/{invoice_id}/pay\"",
+      "risk_level": "MEDIUM",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "financial: \\bbilling\\b",
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "ANY /api/v1/billing/invoices/{invoice_id}/pay: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 63,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/subscriptions/{subscription_id}",
+      "raw_match": "GET /api/v1/subscriptions/{subscription_id}",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 157,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payments/{transaction_id}/capture",
+      "raw_match": "GET /api/v1/payments/{transaction_id}/capture",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id}/capture WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 183,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payments/{transaction_id}/void",
+      "raw_match": "GET /api/v1/payments/{transaction_id}/void",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id}/void WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 209,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/currencies",
+      "raw_match": "GET /api/v1/currencies",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 157,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payments",
+      "raw_match": "GET /api/v1/payments",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 157,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/payments",
+      "raw_match": "POST /api/v1/payments",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 157,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payments/{transaction_id}",
+      "raw_match": "GET /api/v1/payments/{transaction_id}",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 271,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/refunds",
+      "raw_match": "GET /api/v1/refunds",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 271,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/refunds",
+      "raw_match": "POST /api/v1/refunds",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 297,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/refunds/{refund_id}",
+      "raw_match": "GET /api/v1/refunds/{refund_id}",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 63,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/subscriptions",
+      "raw_match": "GET /api/v1/subscriptions",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 63,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/subscriptions",
+      "raw_match": "POST /api/v1/subscriptions",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 341,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/webhooks/paypal",
+      "raw_match": "POST /webhooks/paypal",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 351,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/webhooks/stripe",
+      "raw_match": "POST /webhooks/stripe",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 361,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "Uvicorn ASGI",
+      "raw_match": "ANY Uvicorn ASGI",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 238,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/currencies",
+      "raw_match": "@app.get(\"/api/v1/currencies\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 248,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/payments",
+      "raw_match": "@app.post(\"/api/v1/payments\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 279,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payments/{transaction_id}",
+      "raw_match": "@app.get(\"/api/v1/payments/{transaction_id}\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 301,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/payments",
+      "raw_match": "@app.get(\"/api/v1/payments\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "GET /api/v1/payments: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 325,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/payments/{transaction_id}/capture",
+      "raw_match": "@app.post(\"/api/v1/payments/{transaction_id}/capture\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "POST /api/v1/payments/{transaction_id}/capture: ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 345,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/payments/{transaction_id}/void",
+      "raw_match": "@app.post(\"/api/v1/payments/{transaction_id}/void\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "POST /api/v1/payments/{transaction_id}/void: ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 368,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/refunds",
+      "raw_match": "@app.post(\"/api/v1/refunds\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 412,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/refunds/{refund_id}",
+      "raw_match": "@app.get(\"/api/v1/refunds/{refund_id}\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: GET on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "GET on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 482,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/api/v1/subscriptions",
+      "raw_match": "@app.get(\"/api/v1/subscriptions\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 496,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/api/v1/subscriptions",
+      "raw_match": "@app.post(\"/api/v1/subscriptions\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "POST /api/v1/subscriptions: ownership verification detected"
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 608,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/webhooks/stripe",
+      "raw_match": "@app.post(\"/webhooks/stripe\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 614,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "POST",
+      "route": "/webhooks/paypal",
+      "raw_match": "@app.post(\"/webhooks/paypal\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Mutation: POST",
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false,
+        "owasp_flags": [
+          "API4:no-rate-limit"
+        ]
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 622,
+      "language": "Python",
+      "framework": "Uvicorn",
+      "kind": "Entry",
+      "method": "ANY",
+      "route": "Uvicorn ASGI",
+      "raw_match": "uvicorn.run(",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 238,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/currencies",
+      "raw_match": "\"/api/v1/currencies\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 248,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/payments",
+      "raw_match": "\"/api/v1/payments\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 279,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/payments/{transaction_id}",
+      "raw_match": "\"/api/v1/payments/{transaction_id}\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: ANY on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "ANY on /api/v1/payments/{transaction_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 301,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/payments",
+      "raw_match": "\"/api/v1/payments\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "ANY /api/v1/payments: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 325,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/payments/{transaction_id}/capture",
+      "raw_match": "\"/api/v1/payments/{transaction_id}/capture\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "ANY /api/v1/payments/{transaction_id}/capture: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 345,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/payments/{transaction_id}/void",
+      "raw_match": "\"/api/v1/payments/{transaction_id}/void\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "ANY /api/v1/payments/{transaction_id}/void: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 368,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/refunds",
+      "raw_match": "\"/api/v1/refunds\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 412,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/refunds/{refund_id}",
+      "raw_match": "\"/api/v1/refunds/{refund_id}\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: ANY on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "ANY on /api/v1/refunds/{refund_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 482,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/subscriptions",
+      "raw_match": "\"/api/v1/subscriptions\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 496,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/subscriptions",
+      "raw_match": "\"/api/v1/subscriptions\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": true,
+          "ownership_signals": [
+            "regex_ownership_comparison",
+            "regex_user_identity_access"
+          ],
+          "confidence": 1.0,
+          "details": "ANY /api/v1/subscriptions: ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 524,
+      "language": "Python",
+      "framework": "Dynamic-Route",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/api/v1/subscriptions/{subscription_id}",
+      "raw_match": "\"/api/v1/subscriptions/{subscription_id}\"",
+      "risk_level": "LOW",
+      "auth_status": "UNKNOWN",
+      "risk_reasons": [
+        "Shadow API",
+        "BOLA: ANY on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+      ],
+      "metadata": {
+        "heuristic": "api_path",
+        "bola_analysis": {
+          "bola_risk": "medium",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": "ANY on /api/v1/subscriptions/{subscription_id} WITHOUT authentication \u2014 no ownership verification detected"
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 371,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/health",
+      "raw_match": "GET /health",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 389,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/health/live",
+      "raw_match": "GET /health/live",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/output/openapi.json",
+      "line_number": 399,
+      "language": "Unknown",
+      "framework": "OpenAPI-Spec",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/health/ready",
+      "raw_match": "GET /health/ready",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "source": "openapi",
+        "spec_file": "/code/output/openapi.json",
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 202,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/health",
+      "raw_match": "@app.get(\"/health\"",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 208,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/health/live",
+      "raw_match": "@app.get(\"/health/live\"",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 214,
+      "language": "Python",
+      "framework": "Flask",
+      "kind": "Endpoint",
+      "method": "GET",
+      "route": "/health/ready",
+      "raw_match": "@app.get(\"/health/ready\"",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 202,
+      "language": "Python",
+      "framework": "Health",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/health",
+      "raw_match": "\"/health\"",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 208,
+      "language": "Python",
+      "framework": "Health",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/health",
+      "raw_match": "\"Health\"",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    },
+    {
+      "file_path": "/code/main.py",
+      "line_number": 214,
+      "language": "Python",
+      "framework": "Health",
+      "kind": "Endpoint",
+      "method": "ANY",
+      "route": "/health",
+      "raw_match": "\"Health\"",
+      "risk_level": "INFO",
+      "auth_status": "PUBLIC",
+      "risk_reasons": [],
+      "metadata": {
+        "bola_analysis": {
+          "bola_risk": "none",
+          "has_auth": false,
+          "has_ownership_check": false,
+          "ownership_signals": [],
+          "confidence": 0.0,
+          "details": ""
+        },
+        "has_rate_limit": false
+      }
+    }
+  ],
+  "policy_violations": [
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/transactions/{transaction_id}",
+        "method": "DELETE",
+        "file": "/code/output/openapi.json",
+        "line": 9,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/transactions/{transaction_id}",
+        "method": "DELETE",
+        "file": "/code/output/openapi.json",
+        "line": 9,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "mutation-needs-ownership",
+      "description": "Mutation on resource ID paths with auth but no ownership check (BOLA risk)",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/transactions/{transaction_id}",
+        "method": "DELETE",
+        "file": "/code/output/openapi.json",
+        "line": 9,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 19,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 37,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 37,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 37,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "DELETE",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "DELETE",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "mutation-needs-ownership",
+      "description": "Mutation on resource ID paths with auth but no ownership check (BOLA risk)",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "DELETE",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/database/reset",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 89,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/database/reset",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 89,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/export",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 99,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/export",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 99,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/refund-batch",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 109,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/refund-batch",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 109,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/transactions",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 9,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 19,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payment-methods",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 147,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/capture",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/capture",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/capture",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/void",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 183,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/void",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 183,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/void",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 183,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/currencies",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 209,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 157,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 271,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/refunds",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 271,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 271,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds/{refund_id}",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 297,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "GET",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 63,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/webhooks/paypal",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 341,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/webhooks/paypal",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 341,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/webhooks/stripe",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 351,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/webhooks/stripe",
+        "method": "POST",
+        "file": "/code/output/openapi.json",
+        "line": 351,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "Uvicorn ASGI",
+        "method": "ANY",
+        "file": "/code/output/openapi.json",
+        "line": 361,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payment-methods",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 224,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/currencies",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 238,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 248,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 248,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 279,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 301,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/capture",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 325,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/capture",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 325,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/void",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 345,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/void",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 345,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/refunds",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 368,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 368,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds/{refund_id}",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 412,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 431,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 448,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 460,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 460,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 482,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 496,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 496,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "DELETE",
+        "file": "/code/main.py",
+        "line": 524,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "DELETE",
+        "file": "/code/main.py",
+        "line": 524,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "mutation-needs-ownership",
+      "description": "Mutation on resource ID paths with auth but no ownership check (BOLA risk)",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "DELETE",
+        "file": "/code/main.py",
+        "line": 524,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/transactions",
+        "method": "GET",
+        "file": "/code/main.py",
+        "line": 547,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/refund-batch",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 556,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/refund-batch",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 556,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/export",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 569,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/export",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 569,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/transactions/{transaction_id}",
+        "method": "DELETE",
+        "file": "/code/main.py",
+        "line": 587,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/transactions/{transaction_id}",
+        "method": "DELETE",
+        "file": "/code/main.py",
+        "line": 587,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "mutation-needs-ownership",
+      "description": "Mutation on resource ID paths with auth but no ownership check (BOLA risk)",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/transactions/{transaction_id}",
+        "method": "DELETE",
+        "file": "/code/main.py",
+        "line": 587,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/internal/admin/database/reset",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 596,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/internal/admin/database/reset",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 596,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/webhooks/stripe",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 608,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/webhooks/stripe",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 608,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "no-shadow-mutation",
+      "description": "Mutation endpoints must have explicit authentication",
+      "severity": "HIGH",
+      "endpoint": {
+        "route": "/webhooks/paypal",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 614,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/webhooks/paypal",
+        "method": "POST",
+        "file": "/code/main.py",
+        "line": 614,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "Uvicorn ASGI",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 622,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/currencies",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 238,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 248,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 279,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 301,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/capture",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 325,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/payments/{transaction_id}/void",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 345,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 368,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/refunds/{refund_id}",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 412,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 431,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 448,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/billing/invoices/{invoice_id}/pay",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 460,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 482,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 496,
+        "auth_status": "UNKNOWN"
+      }
+    },
+    {
+      "policy": "auth-coverage",
+      "description": "All non-health endpoints should have auth info",
+      "severity": "MEDIUM",
+      "endpoint": {
+        "route": "/api/v1/subscriptions/{subscription_id}",
+        "method": "ANY",
+        "file": "/code/main.py",
+        "line": 524,
+        "auth_status": "UNKNOWN"
+      }
+    }
+  ]
+}

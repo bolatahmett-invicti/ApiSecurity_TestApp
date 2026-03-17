@@ -1,0 +1,67 @@
+# ============================================
+# Distributed Vulnerable Platform — Helm Values
+# ============================================
+
+# Global image settings
+image:
+  registry: ""  # empty = Docker Hub / local builds
+  pullPolicy: Always
+
+# PostgreSQL
+postgres:
+  image: postgres:16-alpine
+  password: platform_secret_2024
+  user: platform_admin
+  storage: 1Gi
+
+# RabbitMQ
+rabbitmq:
+  image: rabbitmq:3-management-alpine
+  user: guest
+  password: guest
+  storage: 512Mi
+
+# JWT (intentionally weak: HS256, shared secret)
+jwt:
+  secret: super-secret-jwt-key-do-not-use-in-production
+  algorithm: HS256
+  expiryMinutes: 60
+  refreshExpiryDays: 30
+
+# ── Microservices ─────────────────────────────────────
+
+gateway:
+  replicas: 1
+  port: 8000
+
+authService:
+  replicas: 1
+  port: 8001
+
+userService:
+  replicas: 1
+  port: 8002
+
+projectService:
+  replicas: 1
+  port: 8003
+
+billingService:
+  replicas: 1
+  port: 8004
+
+paymentService:
+  replicas: 1
+  port: 8005
+
+notificationService:
+  replicas: 1
+  port: 8006
+
+reportingService:
+  replicas: 1
+  port: 8007
+
+# Seed job
+seed:
+  enabled: true

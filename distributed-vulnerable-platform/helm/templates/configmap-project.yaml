@@ -1,0 +1,440 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-project-code
+  namespace: {{ .Release.Namespace }}
+data:
+  main.py: |
+    """Project Service — projects, tasks, and comments."""
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    import uvicorn
+    from fastapi import FastAPI
+
+    from database import create_tables
+    from routes import router
+
+    app = FastAPI(
+        title="Project Service",
+        description="Project management with tasks and comments. Part of the Distributed Vulnerable Platform.",
+        version="1.0.0",
+        debug=True,  # VULN: Debug mode exposes stack traces
+    )
+
+    app.include_router(router)
+
+
+    @app.on_event("startup")
+    def on_startup():
+        create_tables()
+
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok", "service": "project-service"}
+
+
+    if __name__ == "__main__":
+        uvicorn.run(app, host="0.0.0.0", port=8003)
+
+  database.py: |
+    """Project service database setup."""
+
+    import os
+    import sys
+
+    sys.path.insert(0, "/app")
+
+    from shared.database import Base, get_engine, get_session_factory
+
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./project.db")
+
+    engine = get_engine(DATABASE_URL)
+    SessionLocal = get_session_factory(engine)
+
+
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+
+    def create_tables():
+        from models import Project, Task, Comment  # noqa: F401
+        Base.metadata.create_all(bind=engine)
+
+  models.py: |
+    """Project service SQLAlchemy models."""
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    from datetime import datetime, timezone
+
+    from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
+    from shared.database import Base
+
+
+    class Project(Base):
+        __tablename__ = "projects"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        org_id = Column(Integer, nullable=False, index=True)
+        name = Column(String(255), nullable=False)
+        description = Column(Text, default="")
+        status = Column(String(50), default="active")  # active | archived
+        created_by = Column(Integer, nullable=False)
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class Task(Base):
+        __tablename__ = "tasks"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+        title = Column(String(255), nullable=False)
+        description = Column(Text, default="")
+        assignee_id = Column(Integer, nullable=True)
+        status = Column(String(50), default="todo")  # todo | in_progress | review | done
+        priority = Column(String(50), default="medium")  # low | medium | high | urgent
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class Comment(Base):
+        __tablename__ = "comments"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False, index=True)
+        author_id = Column(Integer, nullable=False)
+        body = Column(Text, nullable=False)
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+  routes.py: |
+    """Project service routes.
+
+    INTENTIONAL VULNERABILITIES:
+    - BOLA: No org_id ownership check on project/task/comment access
+    - Cross-org data leak: GET /projects returns ALL projects without org_id filter
+    - Direct object reference: GET /tasks/{id} bypasses project/org hierarchy
+    - No authorization on delete: Any authenticated user can delete any project
+    """
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    from fastapi import APIRouter, Depends, HTTPException
+    from sqlalchemy.orm import Session
+
+    from database import get_db
+    from models import Comment, Project, Task
+    from schemas import (
+        CommentCreate,
+        CommentResponse,
+        ProjectCreate,
+        ProjectResponse,
+        ProjectUpdate,
+        TaskCreate,
+        TaskResponse,
+        TaskUpdate,
+    )
+    from shared.auth import get_current_user
+
+    router = APIRouter(tags=["projects"])
+
+
+    # -- Projects ----------------------------------------------------------------
+
+    @router.get("/projects", response_model=list[ProjectResponse])
+    def list_projects(
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List all projects.
+
+        VULN: No org_id filter — returns ALL projects across all organizations.
+        Any authenticated user can see every org's projects.
+        """
+        # VULN: Should filter by current_user["org_id"] but doesn't
+        return db.query(Project).all()
+
+
+    @router.post("/projects", response_model=ProjectResponse, status_code=201)
+    def create_project(
+        project: ProjectCreate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Create a new project."""
+        new_project = Project(
+            org_id=project.org_id,
+            name=project.name,
+            description=project.description,
+            created_by=current_user["user_id"],
+        )
+        db.add(new_project)
+        db.commit()
+        db.refresh(new_project)
+        return new_project
+
+
+    @router.get("/projects/{project_id}", response_model=ProjectResponse)
+    def get_project(
+        project_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Get project by ID.
+
+        VULN: BOLA — no check that current_user belongs to the project's org.
+        Any authenticated user can access any project by ID.
+        """
+        # VULN: Should verify current_user["org_id"] == project.org_id
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return project
+
+
+    @router.put("/projects/{project_id}", response_model=ProjectResponse)
+    def update_project(
+        project_id: int,
+        update: ProjectUpdate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Update a project.
+
+        VULN: BOLA — no org ownership check. Any user can update any project.
+        """
+        # VULN: Should verify current_user["org_id"] == project.org_id
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        for field, value in update.model_dump(exclude_unset=True).items():
+            setattr(project, field, value)
+
+        db.commit()
+        db.refresh(project)
+        return project
+
+
+    @router.delete("/projects/{project_id}")
+    def delete_project(
+        project_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Delete a project.
+
+        VULN: BOLA — no org ownership check. Any authenticated user can delete
+        any project regardless of organization.
+        """
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        db.delete(project)
+        db.commit()
+        return {"message": f"Project {project_id} deleted"}
+
+
+    # -- Tasks -------------------------------------------------------------------
+
+    @router.get("/projects/{project_id}/tasks", response_model=list[TaskResponse])
+    def list_tasks(
+        project_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List tasks for a project.
+
+        VULN: No org ownership check on the parent project.
+        """
+        return db.query(Task).filter(Task.project_id == project_id).all()
+
+
+    @router.post("/projects/{project_id}/tasks", response_model=TaskResponse, status_code=201)
+    def create_task(
+        project_id: int,
+        task: TaskCreate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Create a task in a project."""
+        project = db.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        new_task = Task(
+            project_id=project_id,
+            title=task.title,
+            description=task.description,
+            assignee_id=task.assignee_id,
+            priority=task.priority,
+        )
+        db.add(new_task)
+        db.commit()
+        db.refresh(new_task)
+        return new_task
+
+
+    @router.get("/tasks/{task_id}", response_model=TaskResponse)
+    def get_task(
+        task_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Get task by ID.
+
+        VULN: BOLA — direct object access without project or org hierarchy check.
+        Any authenticated user can access any task by guessing/enumerating its ID.
+        """
+        # VULN: Should verify task -> project -> org_id matches current_user["org_id"]
+        task = db.query(Task).filter(Task.id == task_id).first()
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return task
+
+
+    @router.put("/tasks/{task_id}", response_model=TaskResponse)
+    def update_task(
+        task_id: int,
+        update: TaskUpdate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Update a task.
+
+        VULN: BOLA — no project/org ownership check. Any user can update any task.
+        """
+        # VULN: Should verify task -> project -> org_id matches current_user["org_id"]
+        task = db.query(Task).filter(Task.id == task_id).first()
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        for field, value in update.model_dump(exclude_unset=True).items():
+            setattr(task, field, value)
+
+        db.commit()
+        db.refresh(task)
+        return task
+
+
+    # -- Comments ----------------------------------------------------------------
+
+    @router.post("/tasks/{task_id}/comments", response_model=CommentResponse, status_code=201)
+    def create_comment(
+        task_id: int,
+        comment: CommentCreate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """Create a comment on a task."""
+        task = db.query(Task).filter(Task.id == task_id).first()
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        new_comment = Comment(
+            task_id=task_id,
+            author_id=current_user["user_id"],
+            body=comment.body,
+        )
+        db.add(new_comment)
+        db.commit()
+        db.refresh(new_comment)
+        return new_comment
+
+
+    @router.get("/tasks/{task_id}/comments", response_model=list[CommentResponse])
+    def list_comments(
+        task_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user),
+    ):
+        """List comments on a task.
+
+        VULN: No project/org ownership check. Any user can read comments on any task.
+        """
+        return db.query(Comment).filter(Comment.task_id == task_id).all()
+
+  schemas.py: |
+    """Project service Pydantic schemas."""
+
+    from datetime import datetime
+    from typing import Optional
+
+    from pydantic import BaseModel
+
+
+    class ProjectCreate(BaseModel):
+        name: str
+        description: str = ""
+        org_id: int
+
+
+    class ProjectResponse(BaseModel):
+        id: int
+        org_id: int
+        name: str
+        description: str
+        status: str
+        created_by: int
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class ProjectUpdate(BaseModel):
+        name: Optional[str] = None
+        description: Optional[str] = None
+        status: Optional[str] = None
+
+
+    class TaskCreate(BaseModel):
+        title: str
+        description: Optional[str] = ""
+        assignee_id: Optional[int] = None
+        priority: Optional[str] = "medium"
+
+
+    class TaskResponse(BaseModel):
+        id: int
+        project_id: int
+        title: str
+        description: str
+        assignee_id: Optional[int]
+        status: str
+        priority: str
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True
+
+
+    class TaskUpdate(BaseModel):
+        title: Optional[str] = None
+        description: Optional[str] = None
+        assignee_id: Optional[int] = None
+        status: Optional[str] = None
+        priority: Optional[str] = None
+
+
+    class CommentCreate(BaseModel):
+        body: str
+
+
+    class CommentResponse(BaseModel):
+        id: int
+        task_id: int
+        author_id: int
+        body: str
+        created_at: Optional[datetime] = None
+
+        class Config:
+            from_attributes = True

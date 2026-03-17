@@ -1,0 +1,176 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-shared-code
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "dvp.labels" . | nindent 4 }}
+data:
+  __init__.py: |
+    """Shared library for the distributed vulnerable platform."""
+
+  config.py: |
+    """Shared configuration loaded from environment variables."""
+    import os
+
+    class Settings:
+        def __init__(self):
+            self.database_url = os.getenv("DATABASE_URL", "sqlite:///./local.db")
+            self.service_name = os.getenv("SERVICE_NAME", "unknown")
+            self.service_port = int(os.getenv("SERVICE_PORT", "8000"))
+            self.jwt_secret = os.getenv("JWT_SECRET", "{{ .Values.jwt.secret }}")
+            self.jwt_algorithm = os.getenv("JWT_ALGORITHM", "{{ .Values.jwt.algorithm }}")
+            self.jwt_expiry_minutes = int(os.getenv("JWT_EXPIRY_MINUTES", "{{ .Values.jwt.expiryMinutes }}"))
+            self.jwt_refresh_expiry_days = int(os.getenv("JWT_REFRESH_EXPIRY_DAYS", "{{ .Values.jwt.refreshExpiryDays }}"))
+            self.rabbitmq_host = os.getenv("RABBITMQ_HOST", "{{ .Release.Name }}-rabbitmq")
+            self.rabbitmq_port = int(os.getenv("RABBITMQ_PORT", "5672"))
+            self.rabbitmq_user = os.getenv("RABBITMQ_USER", "{{ .Values.rabbitmq.user }}")
+            self.rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "{{ .Values.rabbitmq.password }}")
+            self.auth_service_url = os.getenv("AUTH_SERVICE_URL", "http://{{ .Release.Name }}-auth:{{ .Values.authService.port }}")
+            self.user_service_url = os.getenv("USER_SERVICE_URL", "http://{{ .Release.Name }}-user:{{ .Values.userService.port }}")
+            self.project_service_url = os.getenv("PROJECT_SERVICE_URL", "http://{{ .Release.Name }}-project:{{ .Values.projectService.port }}")
+            self.billing_service_url = os.getenv("BILLING_SERVICE_URL", "http://{{ .Release.Name }}-billing:{{ .Values.billingService.port }}")
+            self.payment_service_url = os.getenv("PAYMENT_SERVICE_URL", "http://{{ .Release.Name }}-payment:{{ .Values.paymentService.port }}")
+            self.notification_service_url = os.getenv("NOTIFICATION_SERVICE_URL", "http://{{ .Release.Name }}-notification:{{ .Values.notificationService.port }}")
+            self.reporting_service_url = os.getenv("REPORTING_SERVICE_URL", "http://{{ .Release.Name }}-reporting:{{ .Values.reportingService.port }}")
+
+    settings = Settings()
+
+  database.py: |
+    """Shared SQLAlchemy database setup."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+    class Base(DeclarativeBase):
+        pass
+
+    def get_engine(database_url):
+        return create_engine(database_url, pool_pre_ping=True, pool_size=5, max_overflow=10)
+
+    def get_session_factory(engine):
+        return sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+  auth.py: |
+    """Shared JWT authentication."""
+    from datetime import datetime, timedelta, timezone
+    from typing import Optional
+    import jwt
+    import os
+    from fastapi import Depends, Header, HTTPException, status
+
+    JWT_SECRET = os.getenv("JWT_SECRET", "{{ .Values.jwt.secret }}")
+    JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "{{ .Values.jwt.algorithm }}")
+
+    def create_access_token(data, expires_minutes=60):
+        payload = data.copy()
+        payload["exp"] = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
+        payload["iat"] = datetime.now(timezone.utc)
+        payload["type"] = "access"
+        return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    def create_refresh_token(data, expires_days=30):
+        payload = data.copy()
+        payload["exp"] = datetime.now(timezone.utc) + timedelta(days=expires_days)
+        payload["iat"] = datetime.now(timezone.utc)
+        payload["type"] = "refresh"
+        return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    def decode_token(token):
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+
+    def get_current_user(authorization: str = Header(...)):
+        if not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid auth header")
+        token = authorization[7:]
+        try:
+            payload = decode_token(token)
+            return {"user_id": payload.get("user_id"), "email": payload.get("email"), "role": payload.get("role", "user"), "org_id": payload.get("org_id")}
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    def get_optional_user(authorization: Optional[str] = Header(None)):
+        if not authorization:
+            return None
+        return get_current_user(authorization)
+
+  messaging.py: |
+    """Shared RabbitMQ messaging."""
+    import json, logging, os, time
+    from typing import Any, Callable
+    import pika
+
+    logger = logging.getLogger(__name__)
+    RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "{{ .Release.Name }}-rabbitmq")
+    RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
+    RABBITMQ_USER = os.getenv("RABBITMQ_USER", "{{ .Values.rabbitmq.user }}")
+    RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "{{ .Values.rabbitmq.password }}")
+    EVENT_PAYMENT_COMPLETED = "events.payment.completed"
+    EVENT_INVOICE_CREATED = "events.invoice.created"
+    EVENT_USER_REGISTERED = "events.user.registered"
+    EVENT_NOTIFICATION_SEND = "events.notification.send"
+    EXCHANGE_NAME = "platform_events"
+
+    def _get_connection():
+        credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
+        params = pika.ConnectionParameters(host=RABBITMQ_HOST, port=RABBITMQ_PORT, credentials=credentials, heartbeat=600, blocked_connection_timeout=300)
+        for attempt in range(10):
+            try:
+                return pika.BlockingConnection(params)
+            except pika.exceptions.AMQPConnectionError:
+                logger.warning(f"RabbitMQ attempt {attempt+1} failed, retrying...")
+                time.sleep(2 ** min(attempt, 4))
+        raise RuntimeError("Could not connect to RabbitMQ")
+
+    def publish_event(routing_key, payload):
+        connection = _get_connection()
+        channel = connection.channel()
+        channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type="topic", durable=True)
+        channel.basic_publish(exchange=EXCHANGE_NAME, routing_key=routing_key, body=json.dumps(payload),
+            properties=pika.BasicProperties(delivery_mode=2, content_type="application/json"))
+        connection.close()
+
+    def consume_events(queue_name, routing_keys, handler):
+        connection = _get_connection()
+        channel = connection.channel()
+        channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type="topic", durable=True)
+        channel.queue_declare(queue=queue_name, durable=True)
+        for key in routing_keys:
+            channel.queue_bind(exchange=EXCHANGE_NAME, queue=queue_name, routing_key=key)
+        def _callback(ch, method, properties, body):
+            try:
+                payload = json.loads(body)
+                handler(method.routing_key, payload)
+                ch.basic_ack(delivery_tag=method.delivery_tag)
+            except Exception as e:
+                logger.error(f"Event handler error: {e}")
+                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+        channel.basic_consume(queue=queue_name, on_message_callback=_callback)
+        logger.info(f"Consuming on queue={queue_name}, keys={routing_keys}")
+        channel.start_consuming()
+
+  models.py: |
+    """Shared Pydantic schemas for events."""
+    from pydantic import BaseModel
+    from typing import Any, Optional
+
+    class EventPayload(BaseModel):
+        event_type: str
+        source_service: str
+        data: dict[str, Any]
+        timestamp: Optional[str] = None
+
+    class PaymentCompletedEvent(BaseModel):
+        invoice_id: int
+        payment_id: int
+        amount: float
+        org_id: int
+
+    class NotificationSendEvent(BaseModel):
+        user_id: Optional[int] = None
+        org_id: Optional[int] = None
+        target: str
+        title: str
+        body: str
+        channel: str = "in_app"

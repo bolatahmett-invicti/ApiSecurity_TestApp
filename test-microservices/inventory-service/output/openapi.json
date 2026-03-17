@@ -1,0 +1,640 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AI-Enriched API",
+    "version": "1.0.0",
+    "description": "API specification generated with AI enrichment"
+  },
+  "paths": {
+    "/api/admin/inventory/location/{location}": {
+      "get": {
+        "summary": "Get inventory by location",
+        "responses": {
+          "200": {
+            "description": "Inventory items for location"
+          }
+        },
+        "parameters": [
+          {
+            "name": "location",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Returns inventory items for location."
+      }
+    },
+    "/api/inventory": {
+      "get": {
+        "summary": "Get all inventory",
+        "responses": {
+          "200": {
+            "description": "List of inventory items"
+          }
+        },
+        "description": "Returns all inventory items."
+      },
+      "post": {
+        "summary": "Create inventory item",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Creates a new inventory item."
+      }
+    },
+    "/api/inventory/{id}": {
+      "get": {
+        "summary": "Get inventory item",
+        "responses": {
+          "200": {
+            "description": "Inventory item details"
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Returns details of inventory item."
+      },
+      "put": {
+        "summary": "Update inventory item",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "location": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "id": "prod-1234",
+                  "quantity": 75,
+                  "location": "Warehouse A"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Inventory item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Product not found"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The identifier of the inventory item",
+            "example": "prod-1234"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "location": {
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                }
+              },
+              "examples": {
+                "update_quantity": {
+                  "value": {
+                    "quantity": 50
+                  }
+                },
+                "update_location": {
+                  "value": {
+                    "location": "Warehouse B"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Update an existing inventory item"
+      },
+      "delete": {
+        "summary": "DELETE /api/inventory/{id}",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/inventory/low-stock": {
+      "get": {
+        "summary": "Get low stock items",
+        "responses": {
+          "200": {
+            "description": "List of low stock items"
+          }
+        },
+        "parameters": [
+          {
+            "name": "threshold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          }
+        ],
+        "description": "Returns inventory items below threshold."
+      }
+    },
+    "/api/inventory/reserve": {
+      "post": {
+        "summary": "Reserve product inventory",
+        "responses": {
+          "200": {
+            "description": "Successful reservation"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ProductId": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "integer"
+                  },
+                  "Location": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Reserves inventory for a product."
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Get service health",
+        "responses": {
+          "200": {
+            "description": "Service health status"
+          }
+        },
+        "description": "Returns health status of service."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "x-ai-enrichment": {
+    "enabled": true,
+    "agents": [
+      "openapi_enrichment",
+      "auth_flow_detector",
+      "payload_generator",
+      "dependency_graph"
+    ],
+    "model": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+    "stats": {
+      "total_endpoints": 9,
+      "enriched_endpoints": 8,
+      "failed_endpoints": 1,
+      "cache_hits": 0,
+      "cache_misses": 10,
+      "total_api_calls": 3,
+      "global_analyses": 2,
+      "deterministic_params": 4,
+      "deterministic_status_codes": 3,
+      "deterministic_type_hints": 0,
+      "deterministic_auth_decorators": 0,
+      "deterministic_docstrings": 0,
+      "skipped_endpoints": 10,
+      "elapsed_total": 38.9,
+      "elapsed_deterministic": 0.0,
+      "elapsed_global_analyses": 22.68,
+      "elapsed_endpoint_enrichments": 16.21,
+      "total_tokens_used": 10863,
+      "token_budget": 10000
+    },
+    "auth_config": {
+      "auth_mechanisms": [
+        {
+          "type": "jwt",
+          "confidence": 0.8,
+          "evidence": [
+            "No explicit JWT code, but common .NET Core JWT pattern"
+          ],
+          "scheme_name": "bearerAuth",
+          "openapi_scheme": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+          },
+          "invicti_config": {
+            "type": "bearer_token",
+            "header_name": "Authorization",
+            "token_prefix": "Bearer",
+            "token_endpoint": "/api/auth/login",
+            "token_field": "access_token"
+          }
+        }
+      ],
+      "auth_endpoints": [
+        {
+          "endpoint": "/api/auth/login",
+          "method": "POST",
+          "purpose": "authentication",
+          "request_fields": [
+            "username",
+            "password"
+          ],
+          "response_fields": [
+            "access_token",
+            "refresh_token",
+            "expires_in"
+          ]
+        },
+        {
+          "endpoint": "/api/auth/token/refresh",
+          "method": "POST",
+          "purpose": "token_refresh",
+          "request_fields": [
+            "refresh_token"
+          ],
+          "response_fields": [
+            "access_token"
+          ]
+        }
+      ],
+      "endpoint_security": {
+        "/api/admin/*": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ],
+          "authorization": {
+            "type": "role",
+            "required_roles": [
+              "admin"
+            ]
+          }
+        },
+        "/api/inventory/*": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ]
+        },
+        "/api/health": {
+          "required": false
+        }
+      },
+      "test_sequence": [
+        {
+          "step": 1,
+          "description": "Obtain access token",
+          "endpoint": "/api/auth/login",
+          "method": "POST",
+          "body": {
+            "username": "test_user",
+            "password": "test_password"
+          },
+          "extract": {
+            "access_token": "$.access_token"
+          }
+        },
+        {
+          "step": 2,
+          "description": "Use token for protected endpoints",
+          "header": "Authorization: Bearer {access_token}"
+        }
+      ],
+      "summary": "API likely uses JWT bearer token authentication with role-based authorization for admin endpoints"
+    },
+    "dependencies": {
+      "resources": [
+        {
+          "name": "admin",
+          "base_path": "/api/admin",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/admin/inventory/location/{location}",
+              "operation": "read"
+            }
+          ],
+          "crud_complete": false
+        },
+        {
+          "name": "inventory",
+          "base_path": "/api/inventory",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/inventory",
+              "operation": "list"
+            },
+            {
+              "method": "GET",
+              "path": "/api/inventory/{id}",
+              "operation": "read"
+            },
+            {
+              "method": "GET",
+              "path": "/api/inventory/low-stock",
+              "operation": "read"
+            },
+            {
+              "method": "POST",
+              "path": "/api/inventory",
+              "operation": "create"
+            },
+            {
+              "method": "POST",
+              "path": "/api/inventory/reserve",
+              "operation": "update"
+            },
+            {
+              "method": "PUT",
+              "path": "/api/inventory/{id}",
+              "operation": "update"
+            },
+            {
+              "method": "DELETE",
+              "path": "/api/inventory/{id}",
+              "operation": "delete"
+            }
+          ],
+          "crud_complete": true
+        },
+        {
+          "name": "health",
+          "base_path": "/api/health",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/health",
+              "operation": "read"
+            }
+          ],
+          "crud_complete": false
+        }
+      ],
+      "dependencies": [
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/inventory"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/inventory/{id}"
+          },
+          "type": "data_dependency",
+          "description": "POST creates inventory item and returns ID for GET",
+          "data_flow": {
+            "produces": [
+              "inventory_id"
+            ],
+            "consumes": [
+              "inventory_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/inventory"
+          },
+          "to": {
+            "method": "PUT",
+            "path": "/api/inventory/{id}"
+          },
+          "type": "data_dependency",
+          "description": "POST creates inventory item for subsequent update",
+          "data_flow": {
+            "produces": [
+              "inventory_id"
+            ],
+            "consumes": [
+              "inventory_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/inventory"
+          },
+          "to": {
+            "method": "DELETE",
+            "path": "/api/inventory/{id}"
+          },
+          "type": "data_dependency",
+          "description": "POST creates inventory item for subsequent deletion",
+          "data_flow": {
+            "produces": [
+              "inventory_id"
+            ],
+            "consumes": [
+              "inventory_id"
+            ]
+          }
+        }
+      ],
+      "test_sequences": [
+        {
+          "sequence_id": 1,
+          "name": "Inventory CRUD workflow",
+          "description": "Test full inventory lifecycle",
+          "steps": [
+            {
+              "step": 1,
+              "method": "POST",
+              "path": "/api/inventory",
+              "description": "Create new inventory item",
+              "extract": {
+                "inventory_id": "$.id"
+              }
+            },
+            {
+              "step": 2,
+              "method": "GET",
+              "path": "/api/inventory/{inventory_id}",
+              "description": "Retrieve created inventory item",
+              "path_params": {
+                "inventory_id": "{inventory_id}"
+              }
+            },
+            {
+              "step": 3,
+              "method": "PUT",
+              "path": "/api/inventory/{inventory_id}",
+              "description": "Update inventory item data",
+              "path_params": {
+                "inventory_id": "{inventory_id}"
+              }
+            },
+            {
+              "step": 4,
+              "method": "DELETE",
+              "path": "/api/inventory/{inventory_id}",
+              "description": "Delete inventory item",
+              "path_params": {
+                "inventory_id": "{inventory_id}"
+              }
+            }
+          ]
+        },
+        {
+          "sequence_id": 2,
+          "name": "Inventory listing",
+          "description": "Test inventory listing endpoints",
+          "steps": [
+            {
+              "step": 1,
+              "method": "GET",
+              "path": "/api/inventory",
+              "description": "Get full inventory list"
+            },
+            {
+              "step": 2,
+              "method": "GET",
+              "path": "/api/inventory/low-stock",
+              "description": "Get low stock items"
+            }
+          ]
+        }
+      ],
+      "prerequisite_endpoints": [],
+      "dependency_graph": {
+        "nodes": [
+          {
+            "id": "POST /api/inventory",
+            "type": "create"
+          },
+          {
+            "id": "GET /api/inventory/{id}",
+            "type": "read"
+          },
+          {
+            "id": "PUT /api/inventory/{id}",
+            "type": "update"
+          },
+          {
+            "id": "DELETE /api/inventory/{id}",
+            "type": "delete"
+          }
+        ],
+        "edges": [
+          {
+            "from": "POST /api/inventory",
+            "to": "GET /api/inventory/{id}",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/inventory",
+            "to": "PUT /api/inventory/{id}",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/inventory",
+            "to": "DELETE /api/inventory/{id}",
+            "type": "data"
+          }
+        ]
+      },
+      "summary": "Analyzed 9 endpoints, found 3 resources, 3 dependencies, generated 2 test sequences"
+    }
+  }
+}

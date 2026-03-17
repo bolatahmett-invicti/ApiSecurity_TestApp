@@ -1,0 +1,63 @@
+{{- if .Values.seed.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-seed
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "dvp.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 10
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-seed
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-postgres
+        image: python:3.12-slim
+        command:
+        - sh
+        - -c
+        - |
+          pip install --quiet psycopg2-binary > /dev/null 2>&1
+          echo "Waiting for PostgreSQL at {{ .Release.Name }}-postgres:5432..."
+          for i in $(seq 1 60); do
+            python -c "import psycopg2; psycopg2.connect(host='{{ .Release.Name }}-postgres', port=5432, user='{{ .Values.postgres.user }}', password='{{ .Values.postgres.password }}', dbname='auth_db')" 2>/dev/null && echo "PostgreSQL is ready!" && exit 0
+            echo "  attempt $i/60..."
+            sleep 5
+          done
+          echo "PostgreSQL not ready after 5 minutes"
+          exit 1
+      containers:
+      - name: seed
+        image: python:3.12-slim
+        command:
+        - sh
+        - -c
+        - |
+          pip install --quiet psycopg2-binary "passlib[bcrypt]" "bcrypt<4.1" sqlalchemy &&
+          python /seed/seed_data.py
+        env:
+        - name: POSTGRES_USER
+          value: {{ .Values.postgres.user | quote }}
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.postgres.password | quote }}
+        - name: POSTGRES_HOST
+          value: {{ .Release.Name }}-postgres
+        - name: POSTGRES_PORT
+          value: "5432"
+        volumeMounts:
+        - name: seed-script
+          mountPath: /seed
+      volumes:
+      - name: seed-script
+        configMap:
+          name: {{ .Release.Name }}-seed-script
+{{- end }}

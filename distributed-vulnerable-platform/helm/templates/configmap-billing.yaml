@@ -1,0 +1,571 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-billing-code
+  namespace: {{ .Release.Namespace }}
+data:
+  main.py: |
+    """Billing Service — Subscription, invoice, and coupon management."""
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    import logging
+    import threading
+    from datetime import datetime, timezone
+
+    import uvicorn
+    from fastapi import FastAPI
+
+    from database import create_tables, SessionLocal
+    from models import Invoice
+    from routes import router
+    from shared.messaging import consume_events, EVENT_PAYMENT_COMPLETED
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    app = FastAPI(
+        title="Billing Service",
+        description="Billing, subscriptions, invoices, and coupons. Part of the Distributed Vulnerable Platform.",
+        version="1.0.0",
+        debug=True,  # VULN: Debug mode exposes stack traces
+    )
+
+    app.include_router(router)
+
+
+    def handle_payment_event(routing_key: str, payload: dict):
+        """Handle payment completed events from RabbitMQ.
+
+        VULN: No source validation — trusts any event on the queue. An attacker
+        who can publish to RabbitMQ can mark any invoice as paid by sending a
+        crafted event with an arbitrary invoice_id. There is no signature
+        verification, no shared secret, and no sender identity check.
+        """
+        logger.info(f"Received event: {routing_key} — payload: {payload}")
+
+        if routing_key == EVENT_PAYMENT_COMPLETED:
+            invoice_id = payload.get("invoice_id")
+            if not invoice_id:
+                logger.warning("Payment event missing invoice_id")
+                return
+
+            # VULN: Blindly trusts the event — no verification that payment actually occurred
+            db = SessionLocal()
+            try:
+                invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+                if invoice:
+                    invoice.status = "paid"
+                    invoice.paid_at = datetime.now(timezone.utc)
+                    db.commit()
+                    logger.info(f"Invoice {invoice_id} marked as paid via event")
+                else:
+                    logger.warning(f"Invoice {invoice_id} not found for payment event")
+            finally:
+                db.close()
+
+
+    def start_consumer():
+        """Start RabbitMQ consumer in a background thread."""
+        try:
+            consume_events(
+                queue_name="billing_payment_queue",
+                routing_keys=[EVENT_PAYMENT_COMPLETED],
+                handler=handle_payment_event,
+            )
+        except Exception as e:
+            logger.error(f"RabbitMQ consumer failed: {e}")
+
+
+    @app.on_event("startup")
+    def on_startup():
+        create_tables()
+        consumer_thread = threading.Thread(target=start_consumer, daemon=True)
+        consumer_thread.start()
+        logger.info("Billing service started — RabbitMQ consumer running in background")
+
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok", "service": "billing-service"}
+
+
+    if __name__ == "__main__":
+        uvicorn.run(app, host="0.0.0.0", port=8004)
+
+  database.py: |
+    """Billing service database setup."""
+
+    import os
+    import sys
+
+    sys.path.insert(0, "/app")
+
+    from shared.database import Base, get_engine, get_session_factory
+
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./billing.db")
+
+    engine = get_engine(DATABASE_URL)
+    SessionLocal = get_session_factory(engine)
+
+
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+
+    def create_tables():
+        from models import Subscription, Invoice, Coupon, AppliedCoupon  # noqa: F401
+        Base.metadata.create_all(bind=engine)
+
+  models.py: |
+    """Billing service SQLAlchemy models."""
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    from datetime import datetime, timezone
+
+    from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, ForeignKey
+    from shared.database import Base
+
+
+    class Subscription(Base):
+        __tablename__ = "subscriptions"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        org_id = Column(Integer, nullable=False, index=True)
+        plan = Column(String(50), nullable=False, default="free")  # free, starter, pro, enterprise
+        status = Column(String(50), nullable=False, default="active")  # active, cancelled, past_due
+        started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+        expires_at = Column(DateTime, nullable=True)
+
+
+    class Invoice(Base):
+        __tablename__ = "invoices"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        org_id = Column(Integer, nullable=False, index=True)
+        subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=False)
+        amount = Column(Float, nullable=False)
+        tax = Column(Float, default=0)
+        discount = Column(Float, default=0)
+        status = Column(String(50), nullable=False, default="draft")  # draft, pending, paid, refunded, cancelled
+        due_date = Column(DateTime, nullable=False)
+        paid_at = Column(DateTime, nullable=True)
+        created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+    class Coupon(Base):
+        __tablename__ = "coupons"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        code = Column(String(100), unique=True, nullable=False, index=True)
+        discount_percent = Column(Integer, nullable=False)
+        max_uses = Column(Integer, nullable=False)
+        current_uses = Column(Integer, default=0)
+        expires_at = Column(DateTime, nullable=True)
+        is_active = Column(Boolean, default=True)
+
+
+    class AppliedCoupon(Base):
+        __tablename__ = "applied_coupons"
+
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        invoice_id = Column(Integer, ForeignKey("invoices.id"), nullable=False)
+        coupon_id = Column(Integer, ForeignKey("coupons.id"), nullable=False)
+        discount_amount = Column(Float, nullable=False)
+
+  routes.py: |
+    """Billing service routes.
+
+    INTENTIONAL VULNERABILITIES:
+    - BOLA on invoice retrieval (no org ownership check)
+    - State bypass on subscription upgrade (no payment verification)
+    - No idempotency on coupon application (same coupon applied multiple times)
+    - Workflow bypass on refund (refund without prior payment)
+    - Broken function-level auth on coupon creation (no admin role check)
+    - RabbitMQ consumer trusts events without source validation
+    """
+
+    import sys
+    sys.path.insert(0, "/app")
+
+    import logging
+    from datetime import datetime, timezone
+
+    from fastapi import APIRouter, Depends, HTTPException, status
+    from sqlalchemy.orm import Session
+
+    from database import get_db
+    from models import Subscription, Invoice, Coupon, AppliedCoupon
+    from schemas import (
+        AppliedCouponResponse,
+        ApplyCouponRequest,
+        CouponCreate,
+        CouponResponse,
+        InvoiceCreate,
+        InvoiceResponse,
+        SubscriptionCreate,
+        SubscriptionResponse,
+        SubscriptionUpdate,
+    )
+    from shared.auth import get_current_user
+
+    logger = logging.getLogger(__name__)
+
+    router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+    # ─── Subscriptions ──────────────────────────────────────────────────────────
+
+
+    @router.get("/subscriptions", response_model=list[SubscriptionResponse])
+    def list_subscriptions(
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """List subscriptions for the current user's organization."""
+        return (
+            db.query(Subscription)
+            .filter(Subscription.org_id == current_user["org_id"])
+            .all()
+        )
+
+
+    @router.post("/subscriptions", response_model=SubscriptionResponse, status_code=201)
+    def create_subscription(
+        req: SubscriptionCreate,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Create a new subscription for the current user's organization."""
+        sub = Subscription(
+            org_id=current_user["org_id"],
+            plan=req.plan,
+            status="active",
+        )
+        db.add(sub)
+        db.commit()
+        db.refresh(sub)
+        return sub
+
+
+    @router.put("/subscriptions/{subscription_id}", response_model=SubscriptionResponse)
+    def update_subscription(
+        subscription_id: int,
+        req: SubscriptionUpdate,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Update a subscription.
+
+        VULN: State bypass — allows upgrading the plan (e.g. free -> enterprise)
+        without any payment verification. The plan field is directly overwritten
+        from the request body. An attacker can upgrade to any plan for free.
+        """
+        sub = (
+            db.query(Subscription)
+            .filter(
+                Subscription.id == subscription_id,
+                Subscription.org_id == current_user["org_id"],
+            )
+            .first()
+        )
+        if not sub:
+            raise HTTPException(status_code=404, detail="Subscription not found")
+
+        # VULN: No payment verification — plan upgrade is accepted as-is
+        if req.plan is not None:
+            sub.plan = req.plan
+        if req.status is not None:
+            sub.status = req.status
+
+        db.commit()
+        db.refresh(sub)
+        return sub
+
+
+    # ─── Invoices ────────────────────────────────────────────────────────────────
+
+
+    @router.get("/invoices", response_model=list[InvoiceResponse])
+    def list_invoices(
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """List invoices for the current user's organization."""
+        return (
+            db.query(Invoice)
+            .filter(Invoice.org_id == current_user["org_id"])
+            .all()
+        )
+
+
+    @router.post("/invoices", response_model=InvoiceResponse, status_code=201)
+    def create_invoice(
+        req: InvoiceCreate,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Create a new invoice."""
+        # Verify subscription belongs to org
+        sub = (
+            db.query(Subscription)
+            .filter(
+                Subscription.id == req.subscription_id,
+                Subscription.org_id == current_user["org_id"],
+            )
+            .first()
+        )
+        if not sub:
+            raise HTTPException(status_code=404, detail="Subscription not found")
+
+        invoice = Invoice(
+            org_id=current_user["org_id"],
+            subscription_id=req.subscription_id,
+            amount=req.amount,
+            tax=req.tax,
+            discount=req.discount,
+            status="draft",
+            due_date=req.due_date,
+        )
+        db.add(invoice)
+        db.commit()
+        db.refresh(invoice)
+        return invoice
+
+
+    @router.get("/invoices/{invoice_id}", response_model=InvoiceResponse)
+    def get_invoice(
+        invoice_id: int,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Get a single invoice by ID.
+
+        VULN: BOLA — retrieves any invoice by ID without checking that the
+        invoice belongs to the current user's organization. An authenticated
+        user can access invoices from any organization by iterating IDs.
+        """
+        # VULN: No org_id filter — any authenticated user can read any invoice
+        invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        return invoice
+
+
+    @router.post("/invoices/{invoice_id}/apply-coupon", response_model=AppliedCouponResponse)
+    def apply_coupon(
+        invoice_id: int,
+        req: ApplyCouponRequest,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Apply a coupon to an invoice.
+
+        VULN: No idempotency — the same coupon can be applied multiple times to
+        the same invoice in rapid succession. There is no check for whether the
+        coupon has already been applied to this invoice. An attacker can send
+        concurrent requests to stack discounts and reduce the invoice to zero.
+        """
+        invoice = (
+            db.query(Invoice)
+            .filter(
+                Invoice.id == invoice_id,
+                Invoice.org_id == current_user["org_id"],
+            )
+            .first()
+        )
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+
+        coupon = (
+            db.query(Coupon)
+            .filter(Coupon.code == req.coupon_code, Coupon.is_active == True)
+            .first()
+        )
+        if not coupon:
+            raise HTTPException(status_code=404, detail="Coupon not found or inactive")
+
+        if coupon.current_uses >= coupon.max_uses:
+            raise HTTPException(status_code=400, detail="Coupon usage limit reached")
+
+        if coupon.expires_at and coupon.expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="Coupon expired")
+
+        # VULN: No check for already-applied coupon on this invoice.
+        # Race condition: concurrent requests can all pass the max_uses check
+        # before any of them increment current_uses.
+        discount_amount = invoice.amount * (coupon.discount_percent / 100)
+        invoice.discount += discount_amount
+        coupon.current_uses += 1
+
+        applied = AppliedCoupon(
+            invoice_id=invoice.id,
+            coupon_id=coupon.id,
+            discount_amount=discount_amount,
+        )
+        db.add(applied)
+        db.commit()
+        db.refresh(applied)
+        return applied
+
+
+    @router.post("/invoices/{invoice_id}/refund", response_model=InvoiceResponse)
+    def refund_invoice(
+        invoice_id: int,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Refund an invoice.
+
+        VULN: Workflow bypass — allows refund on invoices with status "pending"
+        or "draft" that were never actually paid. The endpoint sets status to
+        "refunded" without verifying that the invoice was in "paid" status first.
+        An attacker can create a draft invoice and immediately refund it.
+        """
+        invoice = (
+            db.query(Invoice)
+            .filter(
+                Invoice.id == invoice_id,
+                Invoice.org_id == current_user["org_id"],
+            )
+            .first()
+        )
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+
+        # VULN: No check that invoice.status == "paid" before refunding
+        if invoice.status == "refunded":
+            raise HTTPException(status_code=400, detail="Invoice already refunded")
+        if invoice.status == "cancelled":
+            raise HTTPException(status_code=400, detail="Cannot refund cancelled invoice")
+
+        invoice.status = "refunded"
+        db.commit()
+        db.refresh(invoice)
+        return invoice
+
+
+    # ─── Coupons ─────────────────────────────────────────────────────────────────
+
+
+    @router.post("/coupons", response_model=CouponResponse, status_code=201)
+    def create_coupon(
+        req: CouponCreate,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Create a new coupon.
+
+        VULN: Broken function-level authorization — the endpoint requires a valid
+        JWT (get_current_user) but does NOT check if the user has an admin role.
+        Any authenticated user can create arbitrary discount coupons.
+        """
+        # VULN: Missing role check — should verify current_user["role"] == "admin"
+        coupon = Coupon(
+            code=req.code,
+            discount_percent=req.discount_percent,
+            max_uses=req.max_uses,
+            expires_at=req.expires_at,
+        )
+        db.add(coupon)
+        db.commit()
+        db.refresh(coupon)
+        return coupon
+
+
+    @router.get("/coupons/{code}", response_model=CouponResponse)
+    def validate_coupon(
+        code: str,
+        current_user: dict = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ):
+        """Validate a coupon by code."""
+        coupon = db.query(Coupon).filter(Coupon.code == code).first()
+        if not coupon:
+            raise HTTPException(status_code=404, detail="Coupon not found")
+        return coupon
+
+  schemas.py: |
+    """Billing service Pydantic schemas."""
+
+    from datetime import datetime
+    from typing import Optional
+
+    from pydantic import BaseModel
+
+
+    # --- Subscription schemas ---
+
+    class SubscriptionCreate(BaseModel):
+        plan: str = "free"
+
+    class SubscriptionUpdate(BaseModel):
+        plan: Optional[str] = None
+        status: Optional[str] = None
+
+    class SubscriptionResponse(BaseModel):
+        id: int
+        org_id: int
+        plan: str
+        status: str
+        started_at: Optional[datetime] = None
+        expires_at: Optional[datetime] = None
+
+
+    # --- Invoice schemas ---
+
+    class InvoiceCreate(BaseModel):
+        subscription_id: int
+        amount: float
+        tax: float = 0
+        discount: float = 0
+        due_date: datetime
+
+    class InvoiceResponse(BaseModel):
+        id: int
+        org_id: int
+        subscription_id: int
+        amount: float
+        tax: float
+        discount: float
+        status: str
+        due_date: Optional[datetime] = None
+        paid_at: Optional[datetime] = None
+        created_at: Optional[datetime] = None
+
+
+    # --- Coupon schemas ---
+
+    class CouponCreate(BaseModel):
+        code: str
+        discount_percent: int
+        max_uses: int
+        expires_at: Optional[datetime] = None
+
+    class CouponResponse(BaseModel):
+        id: int
+        code: str
+        discount_percent: int
+        max_uses: int
+        current_uses: int
+        expires_at: Optional[datetime] = None
+        is_active: bool
+
+
+    # --- AppliedCoupon schemas ---
+
+    class ApplyCouponRequest(BaseModel):
+        coupon_code: str
+
+    class AppliedCouponResponse(BaseModel):
+        id: int
+        invoice_id: int
+        coupon_id: int
+        discount_amount: float

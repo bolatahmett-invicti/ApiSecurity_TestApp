@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test-microservices", "test-microservices", "{F3ACACB5-50DB-EFC4-0D4B-1242C3F66969}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "inventory-service", "test-microservices\inventory-service\inventory-service.csproj", "{9F7C5267-190A-336F-F3C1-6F9400E99203}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9F7C5267-190A-336F-F3C1-6F9400E99203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F7C5267-190A-336F-F3C1-6F9400E99203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F7C5267-190A-336F-F3C1-6F9400E99203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F7C5267-190A-336F-F3C1-6F9400E99203}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9F7C5267-190A-336F-F3C1-6F9400E99203} = {F3ACACB5-50DB-EFC4-0D4B-1242C3F66969}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DD5F1453-4868-487E-B47A-B07FA2C3B3E1}
+	EndGlobalSection
+EndGlobal

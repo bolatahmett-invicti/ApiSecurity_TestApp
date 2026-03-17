@@ -1,0 +1,9 @@
+apiVersion: v2
+name: dvp
+description: Distributed Vulnerable Platform — deliberately vulnerable SaaS microservices for API security testing
+maintainers:
+  - name: Invicti Security
+    url: https://invicti.com
+type: application
+version: "1.0.0"
+appVersion: "1.0.0"

